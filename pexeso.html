@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>Pexeso – Tichý koutek</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+body{background:#F5F0E8;font-family:'Nunito',sans-serif;max-width:480px;margin:0 auto;min-height:100dvh;overflow-x:hidden}
+
+/* HEADER */
+.hdr{background:#3C3489;padding:1.2rem 1rem 1.1rem;display:flex;align-items:center;gap:.8rem;border-radius:0 0 22px 22px}
+.back-btn{background:rgba(255,255,255,.15);border:none;color:#EEEDFE;font-family:'Nunito',sans-serif;font-size:13px;font-weight:800;padding:8px 14px;border-radius:12px;cursor:pointer;text-decoration:none;display:inline-block;flex-shrink:0}
+.hdr-text h1{font-size:20px;font-weight:800;color:#EEEDFE}
+.hdr-text p{font-size:11px;color:#AFA9EC;margin-top:1px}
+
+/* SELECT VIEW */
+.sets-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:12px}
+.set-card{border-radius:18px;padding:1rem .9rem;cursor:pointer;border:3px solid transparent;text-align:left;transition:transform .12s,border-color .12s;display:flex;flex-direction:column;gap:5px}
+.set-card:active{transform:scale(.93)}
+.set-emoji{font-size:30px;line-height:1}
+.set-name{font-size:13px;font-weight:800;line-height:1.25;margin-top:3px}
+.set-sub{font-size:11px;font-weight:700;opacity:.55}
+
+/* GAME VIEW */
+#game-view{display:none;flex-direction:column;min-height:100dvh}
+.game-hdr{background:#3C3489;padding:1rem;display:flex;align-items:center;gap:.7rem;border-radius:0 0 22px 22px}
+.game-title{font-size:16px;font-weight:800;color:#EEEDFE;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pairs-badge{background:rgba(255,255,255,.2);color:#EEEDFE;font-size:13px;font-weight:800;padding:5px 12px;border-radius:12px;white-space:nowrap;flex-shrink:0}
+.board{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;padding:10px;align-content:start}
+
+/* CARDS */
+.card{aspect-ratio:5/6;cursor:pointer;perspective:700px;-webkit-perspective:700px;user-select:none}
+.card-inner{width:100%;height:100%;position:relative;transform-style:preserve-3d;-webkit-transform-style:preserve-3d;transition:transform .38s cubic-bezier(.4,0,.2,1)}
+.card.flipped .card-inner,.card.matched .card-inner{transform:rotateY(180deg)}
+.card-face{position:absolute;inset:0;border-radius:16px;backface-visibility:hidden;-webkit-backface-visibility:hidden;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.card-back{background:#3C3489;box-shadow:0 3px 10px rgba(0,0,0,.18)}
+.card-front{transform:rotateY(180deg);box-shadow:0 3px 10px rgba(0,0,0,.12)}
+.card-front svg{width:70%;height:70%}
+.card.matched .card-front{box-shadow:0 0 0 4px #1D9E75,0 3px 10px rgba(0,0,0,.12);transition:box-shadow .2s}
+.card.wrong .card-front{box-shadow:0 0 0 4px #E24B4A,0 3px 10px rgba(0,0,0,.12)}
+
+/* WIN OVERLAY */
+#win-overlay{display:none;position:fixed;inset:0;background:rgba(20,18,44,.88);z-index:100;flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center;padding:2rem}
+#win-overlay.show{display:flex}
+.win-emoji{font-size:80px;animation:pop .5s cubic-bezier(.34,1.56,.64,1)}
+.win-title{font-size:32px;font-weight:900;color:white}
+.win-sub{font-size:15px;color:#AFA9EC;font-weight:700}
+.win-btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:6px}
+.win-btn{font-family:'Nunito',sans-serif;font-size:15px;font-weight:800;padding:13px 26px;border-radius:16px;border:none;cursor:pointer}
+.btn-primary{background:#EF9F27;color:#2C1A00}
+.btn-secondary{background:rgba(255,255,255,.15);color:white}
+#confetti-canvas{position:fixed;inset:0;pointer-events:none;z-index:99}
+@keyframes pop{0%{transform:scale(0) rotate(-10deg)}80%{transform:scale(1.15) rotate(3deg)}100%{transform:scale(1) rotate(0)}}
+</style>
+</head>
+<body>
+
+<!-- SELECT VIEW -->
+<div id="select-view">
+  <header class="hdr">
+    <a href="index.html" class="back-btn">← Zpět</a>
+    <div class="hdr-text"><h1>Pexeso</h1><p>Vyber si sadu karet</p></div>
+  </header>
+  <div class="sets-grid" id="sets-grid"></div>
+</div>
+
+<!-- GAME VIEW -->
+<div id="game-view">
+  <header class="game-hdr">
+    <button class="back-btn" onclick="showSelect()">← Zpět</button>
+    <span class="game-title" id="game-title">Pexeso</span>
+    <span class="pairs-badge"><span id="pairs-count">0</span>&nbsp;/&nbsp;6</span>
+  </header>
+  <div class="board" id="board"></div>
+</div>
+
+<!-- WIN -->
+<div id="win-overlay">
+  <div class="win-emoji">🎉</div>
+  <div class="win-title">Výborně!</div>
+  <div class="win-sub">Našel/a jsi všechny páry!</div>
+  <div class="win-btns">
+    <button class="win-btn btn-primary" onclick="replaySet()">Hrát znovu</button>
+    <button class="win-btn btn-secondary" onclick="showSelect()">Jiná sada</button>
+  </div>
+</div>
+<canvas id="confetti-canvas"></canvas>
+
+<script>
+// ═══════════════════════════════════════════════
+// SVG IKONY  (viewBox 0 0 80 80, pouze obsah)
+// ═══════════════════════════════════════════════
+const I = {
+
+lev:`<ellipse cx="40" cy="46" rx="27" ry="22" fill="#C97B22" opacity=".55"/>
+<circle cx="40" cy="40" r="20" fill="#FAC775"/>
+<circle cx="32" cy="37" r="3.5" fill="#2C1A00"/>
+<circle cx="48" cy="37" r="3.5" fill="#2C1A00"/>
+<ellipse cx="40" cy="44" rx="6" ry="4" fill="#FFDAD4" opacity=".6"/>
+<path d="M33 47 Q40 53 47 47" stroke="#2C1A00" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+<line x1="19" y1="39" x2="31" y2="41" stroke="#C7A882" stroke-width="1.5" stroke-linecap="round"/>
+<line x1="49" y1="41" x2="61" y2="39" stroke="#C7A882" stroke-width="1.5" stroke-linecap="round"/>
+<rect x="34" y="58" width="4" height="10" fill="#C97B22" rx="2"/>
+<rect x="42" y="58" width="4" height="10" fill="#C97B22" rx="2"/>`,
+
+zirafa:`<rect x="36" y="22" width="9" height="38" fill="#EF9F27" rx="4"/>
+<ellipse cx="40" cy="56" rx="15" ry="18" fill="#EF9F27"/>
+<ellipse cx="40" cy="20" rx="10" ry="11" fill="#FAC775"/>
+<circle cx="36" cy="16" r="3" fill="#FAC775"/>
+<circle cx="44" cy="14" r="3" fill="#FAC775"/>
+<circle cx="36" cy="17" r="2" fill="#2C1A00"/>
+<circle cx="44" cy="15" r="2" fill="#2C1A00"/>
+<circle cx="46" cy="38" r="6" fill="#C97B22" opacity=".55"/>
+<circle cx="38" cy="50" r="5" fill="#C97B22" opacity=".55"/>
+<rect x="32" y="70" width="5" height="10" fill="#EF9F27" rx="2"/>
+<rect x="43" y="70" width="5" height="10" fill="#EF9F27" rx="2"/>`,
+
+slon:`<ellipse cx="40" cy="52" rx="26" ry="20" fill="#888780"/>
+<circle cx="40" cy="35" r="18" fill="#B4B2A9"/>
+<path d="M30 46 Q22 60 24 72" stroke="#888780" stroke-width="8" fill="none" stroke-linecap="round"/>
+<ellipse cx="27" cy="27" rx="8" ry="13" fill="#B4B2A9"/>
+<ellipse cx="53" cy="27" rx="8" ry="13" fill="#B4B2A9"/>
+<circle cx="33" cy="33" r="3" fill="#2C1A00"/>
+<circle cx="47" cy="33" r="3" fill="#2C1A00"/>
+<rect x="28" y="64" width="7" height="14" fill="#888780" rx="3"/>
+<rect x="45" y="64" width="7" height="14" fill="#888780" rx="3"/>`,
+
+ovce:`<ellipse cx="40" cy="46" rx="22" ry="18" fill="white"/>
+<ellipse cx="24" cy="40" rx="12" ry="11" fill="white"/>
+<ellipse cx="56" cy="40" rx="12" ry="11" fill="white"/>
+<ellipse cx="40" cy="30" rx="14" ry="13" fill="white"/>
+<circle cx="40" cy="21" r="10" fill="#F5E6D8"/>
+<circle cx="36" cy="19" r="3" fill="#2C1A00"/>
+<circle cx="44" cy="19" r="3" fill="#2C1A00"/>
+<path d="M36 26 Q40 30 44 26" stroke="#2C1A00" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+<rect x="29" y="59" width="5" height="12" fill="#F5E6D8" rx="2"/>
+<rect x="46" y="59" width="5" height="12" fill="#F5E6D8" rx="2"/>`,
+
+holubice:`<path d="M18 44 Q26 28 48 30 Q64 28 68 40 Q58 42 50 36 Q44 40 40 52 Q34 58 22 56 Z" fill="white"/>
+<ellipse cx="62" cy="36" rx="12" ry="8" fill="white"/>
+<path d="M40 52 Q36 64 26 68 Q20 62 22 56" fill="#E8E4DC"/>
+<circle cx="63" cy="33" r="3" fill="#2C1A00"/>
+<circle cx="64" cy="32" r="1" fill="white"/>
+<path d="M56 44 Q50 54 44 58" stroke="#E0DBD0" stroke-width="3" fill="none" stroke-linecap="round"/>`,
+
+ryba:`<ellipse cx="36" cy="40" rx="23" ry="14" fill="#378ADD"/>
+<path d="M58 40 L74 26 L74 54 Z" fill="#1D6AAD"/>
+<circle cx="25" cy="35" r="4.5" fill="white"/>
+<circle cx="24" cy="35" r="2.5" fill="#2C1A00"/>
+<path d="M28 46 Q36 52 46 48" stroke="#1D6AAD" stroke-width="1.5" fill="none" stroke-linecap="round"/>`,
+
+ptak:`<path d="M14 46 Q28 30 46 34 Q54 28 62 32 Q58 42 50 38 Q42 44 36 58 Q28 60 18 54 Z" fill="#639922"/>
+<circle cx="54" cy="30" r="3.5" fill="#2C1A00"/>
+<circle cx="55" cy="29" r="1.5" fill="white"/>
+<path d="M46 34 Q42 46 38 54" stroke="#4A7A18" stroke-width="2" fill="none" stroke-linecap="round"/>`,
+
+kvetina:`<circle cx="40" cy="40" r="10" fill="#EF9F27"/>
+<ellipse cx="40" cy="20" rx="7" ry="11" fill="#E24B4A"/>
+<ellipse cx="40" cy="60" rx="7" ry="11" fill="#E24B4A"/>
+<ellipse cx="20" cy="40" rx="11" ry="7" fill="#E24B4A"/>
+<ellipse cx="60" cy="40" rx="11" ry="7" fill="#E24B4A"/>
+<ellipse cx="25" cy="25" rx="8" ry="11" transform="rotate(-45 25 25)" fill="#FAC775"/>
+<ellipse cx="55" cy="25" rx="8" ry="11" transform="rotate(45 55 25)" fill="#FAC775"/>
+<ellipse cx="25" cy="55" rx="8" ry="11" transform="rotate(45 25 55)" fill="#FAC775"/>
+<ellipse cx="55" cy="55" rx="8" ry="11" transform="rotate(-45 55 55)" fill="#FAC775"/>`,
+
+slunce:`<circle cx="40" cy="40" r="17" fill="#EF9F27"/>
+<line x1="40" y1="6" x2="40" y2="17" stroke="#FAC775" stroke-width="4" stroke-linecap="round"/>
+<line x1="40" y1="63" x2="40" y2="74" stroke="#FAC775" stroke-width="4" stroke-linecap="round"/>
+<line x1="6" y1="40" x2="17" y2="40" stroke="#FAC775" stroke-width="4" stroke-linecap="round"/>
+<line x1="63" y1="40" x2="74" y2="40" stroke="#FAC775" stroke-width="4" stroke-linecap="round"/>
+<line x1="17" y1="17" x2="25" y2="25" stroke="#FAC775" stroke-width="4" stroke-linecap="round"/>
+<line x1="55" y1="55" x2="63" y2="63" stroke="#FAC775" stroke-width="4" stroke-linecap="round"/>
+<line x1="63" y1="17" x2="55" y2="25" stroke="#FAC775" stroke-width="4" stroke-linecap="round"/>
+<line x1="17" y1="63" x2="25" y2="55" stroke="#FAC775" stroke-width="4" stroke-linecap="round"/>`,
+
+mesic:`<path d="M52 12 Q72 28 72 48 Q72 68 52 74 Q36 78 24 66 Q44 64 50 50 Q56 34 46 16 Z" fill="#FAC775"/>
+<circle cx="36" cy="26" r="5" fill="#EF9F27" opacity=".45"/>
+<circle cx="50" cy="58" r="7" fill="#EF9F27" opacity=".35"/>`,
+
+strom:`<rect x="36" y="52" width="8" height="24" fill="#633806" rx="3"/>
+<circle cx="40" cy="37" r="23" fill="#639922"/>
+<circle cx="26" cy="44" r="15" fill="#639922"/>
+<circle cx="54" cy="44" r="15" fill="#639922"/>
+<circle cx="40" cy="28" r="15" fill="#97C459"/>`,
+
+hora:`<polygon points="40,8 6,74 74,74" fill="#B4B2A9"/>
+<polygon points="40,8 26,42 54,42" fill="white" opacity=".8"/>
+<polygon points="58,22 36,74 80,74" fill="#888780"/>`,
+
+morevlna:`<path d="M6 34 Q18 22 30 34 Q42 46 54 34 Q66 22 74 28" stroke="#378ADD" stroke-width="7" fill="none" stroke-linecap="round"/>
+<path d="M6 50 Q18 38 30 50 Q42 62 54 50 Q66 38 74 44" stroke="#1D9E75" stroke-width="6" fill="none" stroke-linecap="round"/>
+<path d="M6 64 Q18 54 30 64 Q42 72 54 64" stroke="#0C447C" stroke-width="5" fill="none" stroke-linecap="round"/>`,
+
+motyl:`<path d="M40 38 Q26 16 12 22 Q6 34 18 44 Q30 50 40 44 Z" fill="#993556"/>
+<path d="M40 38 Q54 16 68 22 Q74 34 62 44 Q50 50 40 44 Z" fill="#993556"/>
+<path d="M40 44 Q26 56 16 64 Q10 72 22 72 Q36 68 40 54 Z" fill="#E24B4A"/>
+<path d="M40 44 Q54 56 64 64 Q70 72 58 72 Q44 68 40 54 Z" fill="#E24B4A"/>
+<ellipse cx="40" cy="46" rx="3" ry="12" fill="#2C1A00"/>`,
+
+mrak:`<ellipse cx="40" cy="50" rx="28" ry="16" fill="white"/>
+<circle cx="26" cy="46" r="15" fill="white"/>
+<circle cx="54" cy="44" r="17" fill="white"/>
+<circle cx="40" cy="36" r="17" fill="white"/>`,
+
+vlna:`<path d="M8 38 Q20 26 32 38 Q44 50 56 38 Q68 26 72 32" stroke="#378ADD" stroke-width="7" fill="none" stroke-linecap="round"/>
+<path d="M8 54 Q20 42 32 54 Q44 66 56 54 Q68 42 72 48" stroke="#1D9E75" stroke-width="6" fill="none" stroke-linecap="round"/>`,
+
+lod:`<path d="M12 54 Q40 64 68 54 L62 72 Q40 78 18 72 Z" fill="#854F0B"/>
+<rect x="38" y="20" width="5" height="38" fill="#633806" rx="2"/>
+<path d="M43 20 Q60 30 60 48 L43 48 Z" fill="#EF9F27"/>`,
+
+kotva:`<circle cx="40" cy="26" r="8" fill="none" stroke="#3C3489" stroke-width="5"/>
+<line x1="40" y1="34" x2="40" y2="70" stroke="#3C3489" stroke-width="5" stroke-linecap="round"/>
+<path d="M20 52 Q30 70 40 70 Q50 70 60 52" stroke="#3C3489" stroke-width="5" fill="none" stroke-linecap="round"/>
+<line x1="20" y1="40" x2="60" y2="40" stroke="#3C3489" stroke-width="5" stroke-linecap="round"/>`,
+
+andel:`<circle cx="40" cy="22" r="13" fill="#FAC775"/>
+<path d="M22 40 Q28 64 40 70 Q52 64 58 40 Q50 32 40 34 Q30 32 22 40Z" fill="#EEEDFE"/>
+<path d="M12 32 Q22 22 28 38 Q22 48 12 46 Z" fill="#CECBF6"/>
+<path d="M68 32 Q58 22 52 38 Q58 48 68 46 Z" fill="#CECBF6"/>
+<circle cx="36" cy="19" r="2.5" fill="#2C1A00"/>
+<circle cx="44" cy="19" r="2.5" fill="#2C1A00"/>
+<path d="M36 26 Q40 30 44 26" stroke="#C97B22" stroke-width="1.5" fill="none" stroke-linecap="round"/>`,
+
+koruna:`<path d="M10 62 L10 38 L24 52 L40 16 L56 52 L70 38 L70 62 Z" fill="#EF9F27"/>
+<rect x="10" y="60" width="60" height="10" fill="#C97B22" rx="3"/>
+<circle cx="40" cy="22" r="6" fill="#E24B4A"/>
+<circle cx="15" cy="44" r="5" fill="#378ADD"/>
+<circle cx="65" cy="44" r="5" fill="#378ADD"/>`,
+
+harfa:`<path d="M20 72 L20 16 Q40 6 58 20 L58 72" fill="none" stroke="#854F0B" stroke-width="5" stroke-linecap="round"/>
+<line x1="20" y1="70" x2="58" y2="70" stroke="#854F0B" stroke-width="5" stroke-linecap="round"/>
+<line x1="28" y1="28" x2="28" y2="70" stroke="#C97B22" stroke-width="2.5"/>
+<line x1="36" y1="22" x2="36" y2="70" stroke="#C97B22" stroke-width="2.5"/>
+<line x1="44" y1="20" x2="44" y2="70" stroke="#C97B22" stroke-width="2.5"/>
+<line x1="52" y1="22" x2="52" y2="70" stroke="#C97B22" stroke-width="2.5"/>`,
+
+stit:`<path d="M14 14 L66 14 L66 48 Q66 68 40 76 Q14 68 14 48 Z" fill="#378ADD"/>
+<path d="M22 22 L58 22 L58 46 Q58 62 40 68 Q22 62 22 46 Z" fill="#1D9E75"/>
+<line x1="40" y1="22" x2="40" y2="68" stroke="#378ADD" stroke-width="3"/>
+<line x1="22" y1="44" x2="58" y2="44" stroke="#378ADD" stroke-width="3"/>`,
+
+mec:`<rect x="36" y="8" width="8" height="54" fill="#888780" rx="2"/>
+<rect x="16" y="42" width="48" height="8" fill="#C7A882" rx="3"/>
+<rect x="34" y="62" width="12" height="14" fill="#854F0B" rx="3"/>`,
+
+prak:`<line x1="16" y1="12" x2="40" y2="52" stroke="#854F0B" stroke-width="5" stroke-linecap="round"/>
+<line x1="64" y1="12" x2="40" y2="52" stroke="#854F0B" stroke-width="5" stroke-linecap="round"/>
+<ellipse cx="40" cy="56" rx="13" ry="8" fill="#C7A882"/>
+<path d="M12 66 Q14 14 20 10" stroke="#854F0B" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+<path d="M68 66 Q66 14 60 10" stroke="#854F0B" stroke-width="2.5" fill="none" stroke-linecap="round"/>`,
+
+kamen:`<ellipse cx="40" cy="46" rx="30" ry="22" fill="#B4B2A9"/>
+<ellipse cx="36" cy="42" rx="25" ry="18" fill="#C7C5C2"/>`,
+
+svitek:`<rect x="18" y="18" width="44" height="44" fill="#FAEEDA" rx="4"/>
+<rect x="12" y="14" width="13" height="52" fill="#EF9F27" rx="7"/>
+<rect x="55" y="14" width="13" height="52" fill="#EF9F27" rx="7"/>
+<line x1="26" y1="30" x2="54" y2="30" stroke="#854F0B" stroke-width="2.5"/>
+<line x1="26" y1="40" x2="54" y2="40" stroke="#854F0B" stroke-width="2.5"/>
+<line x1="26" y1="50" x2="44" y2="50" stroke="#854F0B" stroke-width="2.5"/>`,
+
+plast:`<path d="M22 22 L18 72 L62 72 L58 22 Q50 30 40 28 Q30 30 22 22Z" fill="#EF9F27"/>
+<path d="M22 22 Q30 10 40 12 Q50 10 58 22" fill="#D85A30"/>
+<line x1="32" y1="30" x2="36" y2="70" stroke="#C97B22" stroke-width="1.5"/>
+<line x1="48" y1="30" x2="44" y2="70" stroke="#C97B22" stroke-width="1.5"/>
+<line x1="40" y1="28" x2="40" y2="72" stroke="#E8A020" stroke-width="1.5"/>`,
+
+dzban:`<path d="M28 20 Q24 42 26 60 Q28 72 40 74 Q52 72 54 60 Q56 42 52 20 Z" fill="#C7A882"/>
+<path d="M52 30 Q64 34 64 48 Q64 58 52 54" fill="none" stroke="#C7A882" stroke-width="7" stroke-linecap="round"/>
+<ellipse cx="40" cy="20" rx="12" ry="5" fill="#B4927A"/>
+<ellipse cx="40" cy="17" rx="8" ry="4" fill="#D3B898"/>`,
+
+snop:`<line x1="40" y1="14" x2="40" y2="72" stroke="#EF9F27" stroke-width="4" stroke-linecap="round"/>
+<line x1="26" y1="18" x2="40" y2="72" stroke="#EF9F27" stroke-width="3" stroke-linecap="round"/>
+<line x1="54" y1="18" x2="40" y2="72" stroke="#EF9F27" stroke-width="3" stroke-linecap="round"/>
+<line x1="18" y1="26" x2="40" y2="72" stroke="#FAC775" stroke-width="2" stroke-linecap="round"/>
+<line x1="62" y1="26" x2="40" y2="72" stroke="#FAC775" stroke-width="2" stroke-linecap="round"/>
+<ellipse cx="40" cy="54" rx="13" ry="5" fill="#C97B22"/>`,
+
+obili:`<line x1="40" y1="72" x2="40" y2="16" stroke="#639922" stroke-width="3" stroke-linecap="round"/>
+<ellipse cx="40" cy="13" rx="9" ry="13" fill="#EF9F27"/>
+<line x1="40" y1="40" x2="27" y2="28" stroke="#639922" stroke-width="2.5" stroke-linecap="round"/>
+<ellipse cx="25" cy="26" rx="7" ry="11" fill="#FAC775"/>
+<line x1="40" y1="50" x2="53" y2="38" stroke="#639922" stroke-width="2.5" stroke-linecap="round"/>
+<ellipse cx="55" cy="36" rx="7" ry="11" fill="#FAC775"/>`,
+
+vuz:`<rect x="12" y="36" width="50" height="22" fill="#854F0B" rx="4"/>
+<circle cx="22" cy="62" r="11" fill="#633806" stroke="#412402" stroke-width="3"/>
+<circle cx="58" cy="62" r="11" fill="#633806" stroke="#412402" stroke-width="3"/>
+<circle cx="22" cy="62" r="4" fill="#FAC775"/>
+<circle cx="58" cy="62" r="4" fill="#FAC775"/>
+<rect x="12" y="32" width="50" height="8" fill="#C97B22" rx="3"/>`,
+
+jeslicky:`<path d="M12 62 L40 28 L68 62" fill="none" stroke="#854F0B" stroke-width="5" stroke-linecap="round"/>
+<line x1="12" y1="62" x2="68" y2="62" stroke="#854F0B" stroke-width="4" stroke-linecap="round"/>
+<rect x="18" y="52" width="44" height="16" fill="#C7A882" rx="5"/>
+<ellipse cx="40" cy="52" rx="16" ry="10" fill="#FAC775"/>
+<circle cx="40" cy="45" r="9" fill="#F5E6D8"/>
+<circle cx="36" cy="43" r="2.5" fill="#2C1A00"/>
+<circle cx="44" cy="43" r="2.5" fill="#2C1A00"/>`,
+
+velbloud:`<ellipse cx="34" cy="52" rx="20" ry="16" fill="#C7A882"/>
+<ellipse cx="56" cy="54" rx="16" ry="14" fill="#C7A882"/>
+<rect x="26" y="28" width="10" height="28" fill="#C7A882" rx="5"/>
+<rect x="42" y="24" width="10" height="32" fill="#C7A882" rx="5"/>
+<ellipse cx="31" cy="24" rx="10" ry="8" fill="#D3B898"/>
+<circle cx="27" cy="22" r="3" fill="#2C1A00"/>
+<rect x="24" y="62" width="6" height="14" fill="#C7A882" rx="3"/>
+<rect x="36" y="62" width="6" height="14" fill="#C7A882" rx="3"/>
+<rect x="50" y="64" width="6" height="12" fill="#C7A882" rx="3"/>`,
+
+darek:`<rect x="14" y="36" width="52" height="38" fill="#E24B4A" rx="5"/>
+<rect x="12" y="30" width="56" height="12" fill="#D4537E" rx="5"/>
+<line x1="40" y1="30" x2="40" y2="74" stroke="#FAC775" stroke-width="4"/>
+<line x1="12" y1="36" x2="68" y2="36" stroke="#FAC775" stroke-width="3"/>
+<path d="M30 30 Q30 18 40 20 Q50 18 50 30" fill="none" stroke="#FAC775" stroke-width="3.5" stroke-linecap="round"/>`,
+
+mince:`<circle cx="40" cy="40" r="28" fill="#EF9F27"/>
+<circle cx="40" cy="40" r="22" fill="#FAC775"/>
+<circle cx="40" cy="40" r="8" fill="#EF9F27"/>
+<line x1="40" y1="22" x2="40" y2="58" stroke="#C97B22" stroke-width="2"/>
+<line x1="22" y1="40" x2="58" y2="40" stroke="#C97B22" stroke-width="2"/>`,
+
+chleb:`<ellipse cx="40" cy="48" rx="29" ry="18" fill="#EF9F27"/>
+<ellipse cx="40" cy="42" rx="24" ry="14" fill="#FAC775"/>
+<path d="M20 40 Q32 30 50 38" stroke="#EF9F27" stroke-width="3" fill="none" stroke-linecap="round"/>`,
+
+svicka:`<rect x="35" y="30" width="10" height="38" fill="#FAC775" rx="3"/>
+<path d="M40 22 Q36 14 40 8 Q44 14 40 22Z" fill="#E24B4A"/>
+<path d="M40 22 Q38 17 40 13 Q42 17 40 22Z" fill="#FAC775"/>
+<rect x="26" y="68" width="28" height="5" fill="#C7A882" rx="2"/>`,
+
+dum:`<polygon points="40,10 6,48 74,48" fill="#E24B4A"/>
+<rect x="14" y="46" width="52" height="30" fill="#C7A882"/>
+<rect x="29" y="57" width="14" height="18" fill="#854F0B" rx="2"/>
+<rect x="16" y="52" width="14" height="12" fill="#378ADD" rx="2"/>
+<rect x="50" y="52" width="14" height="12" fill="#378ADD" rx="2"/>`,
+
+brana:`<rect x="8" y="50" width="14" height="26" fill="#C7A882" rx="3"/>
+<rect x="58" y="50" width="14" height="26" fill="#C7A882" rx="3"/>
+<path d="M8 70 Q8 28 40 22 Q72 28 72 70" fill="#FAEEDA" stroke="#C7A882" stroke-width="4"/>
+<path d="M16 70 Q16 36 40 30 Q64 36 64 70" fill="none" stroke="#EF9F27" stroke-width="3"/>`,
+
+hreb:`<rect x="34" y="8" width="12" height="16" fill="#888780" rx="2"/>
+<rect x="38" y="22" width="5" height="52" fill="#5F5E5A" rx="2"/>`,
+
+platno:`<path d="M14 22 Q14 64 40 70 Q66 64 66 22 Q54 30 40 28 Q26 30 14 22Z" fill="white"/>
+<path d="M14 22 Q26 12 40 14 Q54 12 66 22" fill="#E8E4DC"/>
+<line x1="28" y1="38" x2="52" y2="38" stroke="#C7C5C2" stroke-width="2"/>
+<line x1="26" y1="50" x2="54" y2="50" stroke="#C7C5C2" stroke-width="2"/>`,
+
+duha:`<path d="M8 62 Q8 18 40 14 Q72 18 72 62" fill="none" stroke="#E24B4A" stroke-width="6" stroke-linecap="round"/>
+<path d="M14 62 Q14 26 40 22 Q66 26 66 62" fill="none" stroke="#EF9F27" stroke-width="5" stroke-linecap="round"/>
+<path d="M20 62 Q20 34 40 30 Q60 34 60 62" fill="none" stroke="#639922" stroke-width="5" stroke-linecap="round"/>
+<path d="M26 62 Q26 42 40 38 Q54 42 54 62" fill="none" stroke="#378ADD" stroke-width="5" stroke-linecap="round"/>`,
+
+ohen:`<path d="M40 72 Q20 60 22 42 Q24 30 34 28 Q28 44 36 46 Q30 32 40 20 Q44 34 40 46 Q46 36 44 22 Q56 34 52 50 Q58 40 54 32 Q64 44 60 58 Q58 68 40 72Z" fill="#E24B4A"/>
+<path d="M40 68 Q28 58 30 46 Q32 38 36 36 Q32 48 40 52 Q44 40 42 32 Q52 44 48 56 Q46 64 40 68Z" fill="#FAC775"/>`,
+
+osel:`<ellipse cx="42" cy="54" rx="22" ry="16" fill="#888780"/>
+<circle cx="34" cy="36" r="15" fill="#B4B2A9"/>
+<rect x="29" y="20" width="7" height="16" fill="#B4B2A9" rx="3"/>
+<rect x="40" y="18" width="7" height="18" fill="#B4B2A9" rx="3"/>
+<circle cx="30" cy="33" r="3" fill="#2C1A00"/>
+<rect x="26" y="62" width="7" height="14" fill="#888780" rx="3"/>
+<rect x="38" y="62" width="7" height="14" fill="#888780" rx="3"/>
+<rect x="52" y="60" width="7" height="14" fill="#888780" rx="3"/>`,
+
+velryba:`<path d="M10 42 Q8 28 24 24 Q62 16 70 36 Q78 52 60 62 Q42 68 10 42Z" fill="#378ADD"/>
+<path d="M62 50 L76 38 L80 58 Z" fill="#378ADD"/>
+<circle cx="26" cy="32" r="6" fill="white"/>
+<circle cx="25" cy="31" r="3.5" fill="#2C1A00"/>
+<path d="M28 44 Q40 50 52 46" stroke="#1D6AAD" stroke-width="2" fill="none" stroke-linecap="round"/>`,
+
+jablko:`<circle cx="40" cy="46" r="27" fill="#E24B4A"/>
+<path d="M36 20 Q36 13 43 11 Q45 17 40 22" fill="#639922"/>
+<ellipse cx="29" cy="40" rx="7" ry="11" fill="#FAC775" opacity=".35"/>`,
+
+had:`<path d="M20 64 Q10 48 20 34 Q30 22 42 26 Q54 30 58 22 Q64 12 60 6" stroke="#639922" stroke-width="11" fill="none" stroke-linecap="round"/>
+<circle cx="60" cy="6" r="7" fill="#3B6D11"/>
+<circle cx="56" cy="4" r="2.5" fill="#2C1A00"/>
+<circle cx="63" cy="4" r="2.5" fill="#2C1A00"/>
+<path d="M57 10 L55 15 M62 10 L65 15" stroke="#E24B4A" stroke-width="1.5" stroke-linecap="round"/>`,
+
+kriz:`<rect x="34" y="8" width="12" height="64" fill="#854F0B" rx="4"/>
+<rect x="10" y="26" width="60" height="12" fill="#854F0B" rx="4"/>`,
+
+hvezda:`<polygon points="40,6 46,28 70,28 51,43 58,66 40,52 22,66 29,43 10,28 34,28" fill="#EF9F27"/>`,
+
+racek:`<path d="M6 38 Q18 28 32 38" fill="none" stroke="white" stroke-width="7" stroke-linecap="round"/>
+<path d="M48 38 Q62 28 74 38" fill="none" stroke="white" stroke-width="7" stroke-linecap="round"/>
+<circle cx="40" cy="40" r="5" fill="white"/>
+<path d="M37 40 L36 46 L44 46 L43 40" fill="#EF9F27"/>`,
+
+oko:`<ellipse cx="40" cy="40" rx="30" ry="18" fill="white"/>
+<circle cx="40" cy="40" r="13" fill="#378ADD"/>
+<circle cx="40" cy="40" r="8" fill="#2C1A00"/>
+<circle cx="36" cy="36" r="3" fill="white"/>`,
+
+ruka:`<path d="M32 70 L32 30 Q32 24 38 24 Q44 24 44 30 L44 44 Q46 38 52 38 Q58 38 58 44 L58 50 Q60 46 65 46 Q70 46 70 52 L68 62 Q66 74 54 74 L32 70Z" fill="#FAC775"/>`,
+
+mesto:`<rect x="28" y="34" width="24" height="36" fill="#888780"/>
+<rect x="8" y="46" width="22" height="24" fill="#B4B2A9"/>
+<rect x="50" y="42" width="22" height="28" fill="#B4B2A9"/>
+<rect x="34" y="24" width="12" height="14" fill="#888780"/>
+<rect x="16" y="52" width="7" height="9" fill="#378ADD" rx="1"/>
+<rect x="57" y="50" width="7" height="9" fill="#378ADD" rx="1"/>
+<rect x="32" y="44" width="7" height="9" fill="#378ADD" rx="1"/>
+<rect x="41" y="44" width="7" height="9" fill="#378ADD" rx="1"/>`,
+
+};
+
+// ═══════════════════════════════════════════════
+// SADY
+// ═══════════════════════════════════════════════
+const SETS = [
+  {id:'archa',    name:'Noemova archa',      emoji:'🌊', bg:'#E6F1FB', fg:'#0C447C', icons:['lev','zirafa','slon','ovce','holubice','ryba']},
+  {id:'stvoreni', name:'Stvoření světa',     emoji:'🌍', bg:'#E1F5EE', fg:'#085041', icons:['slunce','mesic','strom','ryba','ptak','kvetina']},
+  {id:'eden',     name:'Zahrada Eden',       emoji:'🍎', bg:'#EAF3DE', fg:'#27500A', icons:['jablko','had','strom','andel','mec','brana']},
+  {id:'jonas',    name:'Jonáš',              emoji:'🐟', bg:'#DDEEFF', fg:'#0C447C', icons:['velryba','lod','vlna','kotva','mesto','slunce']},
+  {id:'daniel',   name:'Daniel',             emoji:'🦁', bg:'#FAEEDA', fg:'#633806', icons:['lev','hvezda','ohen','koruna','svitek','andel']},
+  {id:'josef',    name:'Josef',              emoji:'👘', bg:'#FAECE7', fg:'#4A1B0C', icons:['plast','dzban','snop','hvezda','obili','vuz']},
+  {id:'david',    name:'David a Goliáš',     emoji:'🪨', bg:'#FAEEDA', fg:'#633806', icons:['prak','kamen','harfa','koruna','lev','stit']},
+  {id:'betlem',   name:'Betlém',             emoji:'⭐', bg:'#EEEDFE', fg:'#26215C', icons:['hvezda','andel','jeslicky','ovce','velbloud','darek']},
+  {id:'podob',    name:'Podobenství',        emoji:'🐑', bg:'#E1F5EE', fg:'#085041', icons:['ovce','mince','chleb','svicka','dum','strom']},
+  {id:'zazraky',  name:'Zázraky Ježíše',     emoji:'🍞', bg:'#FAEEDA', fg:'#633806', icons:['chleb','ryba','dzban','vlna','oko','ruka']},
+  {id:'more',     name:'Ježíš na moři',      emoji:'⛵', bg:'#E6F1FB', fg:'#0C447C', icons:['lod','vlna','mrak','ruka','kotva','racek']},
+  {id:'vel',      name:'Velikonoce',         emoji:'✝', bg:'#FBEAF0', fg:'#4B1528', icons:['kriz','hreb','kamen','platno','andel','slunce']},
+  {id:'symboly',  name:'Boží symboly',       emoji:'🌈', bg:'#EEEDFE', fg:'#26215C', icons:['kriz','holubice','ryba','svicka','duha','hvezda']},
+  {id:'zvirata',  name:'Biblická zvířata',   emoji:'🐾', bg:'#EAF3DE', fg:'#27500A', icons:['osel','velbloud','ovce','holubice','had','lev']},
+  {id:'priroda',  name:'Boží stvoření',      emoji:'🌸', bg:'#FAEEDA', fg:'#633806', icons:['hora','morevlna','strom','kvetina','motyl','mrak']},
+];
+
+// ═══════════════════════════════════════════════
+// STAV HRY
+// ═══════════════════════════════════════════════
+let currentSet=null, cards=[], first=null, second=null, locked=false, matched=0;
+
+// ═══════════════════════════════════════════════
+// INIT — vykreslení výběru sad
+// ═══════════════════════════════════════════════
+function initSelect(){
+  const grid=document.getElementById('sets-grid');
+  grid.innerHTML=SETS.map(s=>`
+    <button class="set-card" style="background:${s.bg};color:${s.fg}" onclick="startGame('${s.id}')">
+      <span class="set-emoji">${s.emoji}</span>
+      <span class="set-name">${s.name}</span>
+      <span class="set-sub">6 párů</span>
+    </button>
+  `).join('');
+}
+
+// ═══════════════════════════════════════════════
+// ZOBRAZENÍ VIEWS
+// ═══════════════════════════════════════════════
+function showSelect(){
+  document.getElementById('select-view').style.display='block';
+  document.getElementById('game-view').style.display='none';
+  document.getElementById('win-overlay').classList.remove('show');
+  window.scrollTo(0,0);
+}
+function showGame(){
+  document.getElementById('select-view').style.display='none';
+  document.getElementById('game-view').style.display='flex';
+  window.scrollTo(0,0);
+}
+
+// ═══════════════════════════════════════════════
+// SPUŠTĚNÍ HRY
+// ═══════════════════════════════════════════════
+function startGame(setId){
+  currentSet=SETS.find(s=>s.id===setId);
+  const icons=[...currentSet.icons,...currentSet.icons];
+  for(let i=icons.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [icons[i],icons[j]]=[icons[j],icons[i]];
+  }
+  cards=icons.map((icon,idx)=>({icon,idx}));
+  matched=0; first=null; second=null; locked=false;
+  document.getElementById('game-title').textContent=currentSet.name;
+  document.getElementById('pairs-count').textContent='0';
+  renderBoard();
+  showGame();
+}
+
+function replaySet(){ startGame(currentSet.id); }
+
+// ═══════════════════════════════════════════════
+// RENDEROVÁNÍ HERNÍ PLOCHY
+// ═══════════════════════════════════════════════
+function renderBoard(){
+  const board=document.getElementById('board');
+  board.innerHTML=cards.map((card,i)=>`
+    <div class="card" id="c${i}" onclick="flipCard(${i})">
+      <div class="card-inner">
+        <div class="card-face card-back">
+          <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg" width="60%" height="60%">
+            <circle cx="40" cy="40" r="36" fill="rgba(255,255,255,.12)"/>
+            <circle cx="40" cy="40" r="24" fill="rgba(255,255,255,.1)"/>
+            <rect x="37" y="14" width="6" height="52" fill="rgba(255,255,255,.18)" rx="3"/>
+            <rect x="14" y="37" width="52" height="6" fill="rgba(255,255,255,.18)" rx="3"/>
+          </svg>
+        </div>
+        <div class="card-face card-front" style="background:${currentSet.bg}">
+          <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">${I[card.icon]}</svg>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ═══════════════════════════════════════════════
+// LOGIKA KARET
+// ═══════════════════════════════════════════════
+function flipCard(idx){
+  if(locked) return;
+  const el=document.getElementById('c'+idx);
+  if(el.classList.contains('flipped')||el.classList.contains('matched')) return;
+  el.classList.add('flipped');
+
+  if(!first){ first={idx,icon:cards[idx].icon}; return; }
+  second={idx,icon:cards[idx].icon};
+  locked=true;
+
+  if(first.icon===second.icon){
+    setTimeout(()=>{
+      document.getElementById('c'+first.idx).classList.add('matched');
+      document.getElementById('c'+second.idx).classList.add('matched');
+      matched++;
+      document.getElementById('pairs-count').textContent=matched;
+      first=null; second=null; locked=false;
+      if(matched===6) setTimeout(showWin,600);
+    },300);
+  } else {
+    document.getElementById('c'+first.idx).classList.add('wrong');
+    document.getElementById('c'+second.idx).classList.add('wrong');
+    setTimeout(()=>{
+      document.getElementById('c'+first.idx).classList.remove('flipped','wrong');
+      document.getElementById('c'+second.idx).classList.remove('flipped','wrong');
+      first=null; second=null; locked=false;
+    },900);
+  }
+}
+
+// ═══════════════════════════════════════════════
+// VÝHRA
+// ═══════════════════════════════════════════════
+function showWin(){
+  document.getElementById('win-overlay').classList.add('show');
+  startConfetti();
+}
+
+// ═══════════════════════════════════════════════
+// KONFETY
+// ═══════════════════════════════════════════════
+function startConfetti(){
+  const canvas=document.getElementById('confetti-canvas');
+  const ctx=canvas.getContext('2d');
+  canvas.width=window.innerWidth;
+  canvas.height=window.innerHeight;
+  const colors=['#EF9F27','#E24B4A','#639922','#378ADD','#993556','#FAC775','#3C3489','#1D9E75'];
+  const pieces=Array.from({length:90},()=>({
+    x:Math.random()*canvas.width,
+    y:Math.random()*-canvas.height*0.6,
+    r:Math.random()*7+4,
+    color:colors[Math.floor(Math.random()*colors.length)],
+    vx:(Math.random()-.5)*4,
+    vy:Math.random()*4+2,
+    rot:Math.random()*Math.PI*2,
+    vrot:(Math.random()-.5)*.15,
+    shape:Math.random()>.5?'circle':'rect'
+  }));
+  let frame, t=0;
+  function draw(){
+    t++;
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    pieces.forEach(p=>{
+      ctx.save();
+      ctx.translate(p.x,p.y);
+      ctx.rotate(p.rot);
+      ctx.fillStyle=p.color;
+      if(p.shape==='rect'){ctx.fillRect(-p.r,-p.r/2,p.r*2,p.r)}
+      else{ctx.beginPath();ctx.arc(0,0,p.r,0,Math.PI*2);ctx.fill();}
+      ctx.restore();
+      p.x+=p.vx; p.y+=p.vy; p.rot+=p.vrot;
+      if(p.y>canvas.height){p.y=-20;p.x=Math.random()*canvas.width;}
+    });
+    frame=requestAnimationFrame(draw);
+    if(t>200){cancelAnimationFrame(frame);ctx.clearRect(0,0,canvas.width,canvas.height);}
+  }
+  draw();
+}
+
+// START
+initSelect();
+</script>
+</body>
+</html>
