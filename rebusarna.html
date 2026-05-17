@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rébusnárna – Tichý koutek</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:#F5F0E8;font-family:'Nunito',sans-serif;max-width:640px;margin:0 auto;min-height:100dvh}
+.hdr{background:#712B13;padding:1.5rem 1.1rem 1.4rem;display:flex;align-items:center;gap:.9rem;border-radius:0 0 22px 22px}
+.back-btn{background:rgba(255,255,255,.15);border:none;color:#FAEEDA;font-family:'Nunito',sans-serif;font-size:14px;font-weight:700;padding:8px 13px;border-radius:12px;cursor:pointer;flex-shrink:0}
+.back-btn:active{background:rgba(255,255,255,.28)}
+.hdr-text h1{font-family:'Lora',serif;font-size:21px;font-weight:600;color:#FAEEDA}
+.hdr-text p{font-size:11px;color:#F5C4B3;margin-top:2px}
+
+/* START */
+#start-view{padding:1.5rem 1rem 2rem}
+.start-card{background:white;border-radius:20px;padding:1.5rem 1.2rem;text-align:center;border:1.5px solid #E6E2DA}
+.start-ico{font-size:52px;margin-bottom:.8rem}
+.start-title{font-family:'Lora',serif;font-size:22px;color:#4A1B0C;margin-bottom:.5rem}
+.start-desc{font-size:15px;color:#712B13;line-height:1.6;margin-bottom:1rem}
+.types-row{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:1.3rem}
+.type-pill{font-size:12px;font-weight:700;padding:5px 12px;border-radius:20px;background:#FAECE7;color:#712B13}
+.start-btn{background:#712B13;color:#FAEEDA;border:none;font-family:'Nunito',sans-serif;font-size:16px;font-weight:800;padding:14px 0;border-radius:16px;width:100%;cursor:pointer}
+.start-btn:active{background:#4A1B0C}
+
+/* QUIZ */
+#quiz-view{display:none;padding:1rem 1rem 2rem}
+.progress-row{display:flex;align-items:center;gap:10px;margin-bottom:1rem}
+.progress-bar{flex:1;height:8px;background:#D3D1C7;border-radius:4px;overflow:hidden}
+.progress-fill{height:100%;background:#712B13;border-radius:4px;transition:width .3s}
+.progress-label{font-size:13px;font-weight:700;color:#633806;white-space:nowrap}
+.score-badge{background:#FAECE7;border-radius:12px;padding:4px 10px;font-size:13px;font-weight:800;color:#4A1B0C}
+
+/* TYPE BADGE */
+.type-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;padding:5px 12px;border-radius:20px;margin-bottom:.7rem}
+.tb-sifra{background:#EEEDFE;color:#26215C}
+.tb-hadanka{background:#E1F5EE;color:#085041}
+.tb-doplnvers{background:#E6F1FB;color:#0C447C}
+.tb-kdojsem{background:#FBEAF0;color:#4B1528}
+.tb-anagram{background:#FAECE7;color:#712B13}
+
+.q-card{background:white;border-radius:20px;padding:1.3rem 1.1rem 1.1rem;border:1.5px solid #E6E2DA;margin-bottom:.9rem}
+.q-puzzle{font-size:15px;color:#2C2C2A;line-height:1.6}
+/* Šifra styling */
+.cipher-block{background:#F5F0E8;border-radius:12px;padding:.9rem 1rem;margin:.7rem 0;font-family:'Courier New',monospace;font-size:18px;font-weight:700;color:#26215C;letter-spacing:3px;text-align:center;word-break:break-all}
+/* Hádanka styling */
+.hadanka-block{font-family:'Lora',serif;font-size:17px;font-style:italic;color:#085041;line-height:1.6;padding:.6rem 0}
+/* Doplň verš styling */
+.vers-block{font-family:'Lora',serif;font-size:16px;color:#0C447C;line-height:1.7;padding:.5rem 0}
+.blank{display:inline-block;min-width:80px;border-bottom:2.5px solid #378ADD;margin:0 4px;text-align:center;font-weight:800}
+/* Kdo jsem styling */
+.clue-list{list-style:none;display:flex;flex-direction:column;gap:8px;padding:.5rem 0}
+.clue-item{background:#FBEAF0;border-radius:10px;padding:9px 12px;font-size:14px;color:#4B1528;font-weight:600;line-height:1.4}
+.clue-num{font-size:11px;font-weight:800;color:#D4537E;margin-bottom:2px;display:block}
+/* Anagram styling */
+.anagram-block{background:#FAECE7;border-radius:12px;padding:.9rem 1rem;font-family:'Courier New',monospace;font-size:22px;font-weight:800;color:#712B13;letter-spacing:6px;text-align:center}
+
+.answers{display:flex;flex-direction:column;gap:9px;margin-bottom:.9rem}
+.ans-btn{background:#F5F0E8;border:2px solid transparent;border-radius:14px;padding:13px 14px;font-family:'Nunito',sans-serif;font-size:15px;font-weight:700;color:#26215C;text-align:left;cursor:pointer;transition:all .15s;line-height:1.3}
+.ans-btn:active{transform:scale(.97)}
+.ans-btn.correct{background:#E1F5EE;border-color:#1D9E75;color:#085041}
+.ans-btn.wrong{background:#FAECE7;border-color:#D85A30;color:#4A1B0C}
+.ans-btn.dimmed{opacity:.45}
+
+.explain-box{border-radius:14px;padding:1rem 1rem;display:none}
+.explain-icon{font-size:18px;margin-bottom:4px;display:block}
+.explain-text{font-size:14px;line-height:1.6;font-weight:600}
+
+.next-btn{background:#712B13;color:#FAEEDA;border:none;font-family:'Nunito',sans-serif;font-size:15px;font-weight:800;padding:13px 0;border-radius:14px;width:100%;cursor:pointer;display:none;margin-top:.7rem}
+.next-btn:active{background:#4A1B0C}
+
+/* RESULT */
+#result-view{display:none;padding:1.5rem 1rem 2rem}
+.result-card{background:white;border-radius:20px;padding:1.8rem 1.2rem;text-align:center;border:1.5px solid #E6E2DA}
+.result-ico{font-size:56px;margin-bottom:.6rem}
+.result-title{font-family:'Lora',serif;font-size:24px;color:#4A1B0C;margin-bottom:.4rem}
+.result-score{font-size:48px;font-weight:800;color:#712B13;margin:.4rem 0}
+.result-max{font-size:16px;color:#AFA9EC;margin-bottom:.4rem}
+.result-msg{font-size:15px;color:#633806;line-height:1.6;margin-bottom:1.4rem}
+.result-btn{background:#712B13;color:#FAEEDA;border:none;font-family:'Nunito',sans-serif;font-size:16px;font-weight:800;padding:14px 0;border-radius:16px;width:100%;cursor:pointer;margin-bottom:.7rem}
+.result-btn:active{background:#4A1B0C}
+.result-btn2{background:#F5F0E8;color:#26215C;border:none;font-family:'Nunito',sans-serif;font-size:15px;font-weight:700;padding:12px 0;border-radius:14px;width:100%;cursor:pointer}
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <a href="index.html" class="back-btn">← Zpět</a>
+  <div class="hdr-text"><h1>Rébusnárna</h1><p>Hádanky a šifry</p></div>
+</header>
+
+<!-- START -->
+<div id="start-view">
+  <div style="height:1.2rem"></div>
+  <div class="start-card">
+    <div class="start-ico">🧩</div>
+    <h2 class="start-title">Rébusnárna</h2>
+    <p class="start-desc">Prolomíš šifry? Uhodneš postavu z nápověd? Složíš anagram? Každé kolo dostaneš 15 rébusů — pokaždé jiné!</p>
+    <div class="types-row">
+      <span class="type-pill">🔐 Šifry</span>
+      <span class="type-pill">🎭 Hádanky</span>
+      <span class="type-pill">📖 Doplň verš</span>
+      <span class="type-pill">🕵️ Kdo jsem?</span>
+      <span class="type-pill">🔀 Anagramy</span>
+    </div>
+    <button class="start-btn" onclick="startQuiz()">▶ Začít rébusy</button>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div id="quiz-view">
+  <div class="progress-row">
+    <div class="progress-bar"><div class="progress-fill" id="prog-fill"></div></div>
+    <span class="progress-label" id="prog-label">1 / 15</span>
+    <span class="score-badge" id="score-badge">✓ 0</span>
+  </div>
+  <div class="q-card" id="q-card">
+    <!-- dynamicky -->
+  </div>
+  <div class="answers" id="answers"></div>
+  <div class="explain-box" id="explain-box">
+    <span class="explain-icon" id="explain-icon">💡</span>
+    <p class="explain-text" id="explain-text"></p>
+  </div>
+  <button class="next-btn" id="next-btn" onclick="nextQuestion()">Další rébus →</button>
+</div>
+
+<!-- RESULT -->
+<div id="result-view">
+  <div style="height:1.2rem"></div>
+  <div class="result-card">
+    <div class="result-ico" id="result-ico">🎉</div>
+    <h2 class="result-title" id="result-title">Výborně!</h2>
+    <div class="result-score" id="result-score">13</div>
+    <div class="result-max" id="result-max">z 15 správně</div>
+    <p class="result-msg" id="result-msg"></p>
+    <button class="result-btn" onclick="startQuiz()">▶ Hrát znovu</button>
+    <button class="result-btn2" onclick="location.href='index.html'">← Zpět do koutku</button>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════
+   TYPY RÉBUSŮ
+   type: 'sifra' | 'hadanka' | 'doplnvers' | 'kdojsem' | 'anagram'
+   a: pole 3 odpovědí, ok: index správné
+══════════════════════════════════════════ */
+
+var ALL = [
+
+  /* ─── ŠIFRY ─── každé písmeno posunuté o N míst v abecedě nebo jiný kód */
+
+  {type:'sifra', badge:'🔐 Šifra', badgeClass:'tb-sifra',
+   intro:'Každé písmeno je posunuté o 1 dopředu v abecedě (B→A, C→B…). Co říká tato zpráva?',
+   puzzle:'<div class="cipher-block">OPF</div>',
+   a:['NOE','MŮŽ','BŮH'], ok:0,
+   exp:'O→N, P→O, F→E. Zpráva říká: NOE — muž, který postavil archu a zachránil svou rodinu i zvířata.'},
+
+  {type:'sifra', badge:'🔐 Šifra', badgeClass:'tb-sifra',
+   intro:'Čísla zastupují písmena (A=1, B=2, C=3…). Přelož tajnou zprávu!',
+   puzzle:'<div class="cipher-block">4 · 1 · 22 · 9 · 4</div>',
+   a:['DAVID','DANIEL','DEBORA'], ok:0,
+   exp:'D=4, A=1, V=22, I=9, D=4. DAVID — pastýř, který se stal králem a porazil obra Goliáše.'},
+
+  {type:'sifra', badge:'🔐 Šifra', badgeClass:'tb-sifra',
+   intro:'Zpráva je napsána pozpátku. Přečti ji správně!',
+   puzzle:'<div class="cipher-block">ŠÁNOJ</div>',
+   a:['JONÁŠ','JEŽÍŠ','JAKOB'], ok:0,
+   exp:'ŠÁNOJ pozpátku = JONÁŠ. Prorok, který strávil tři dny v břiše velké ryby.'},
+
+  {type:'sifra', badge:'🔐 Šifra', badgeClass:'tb-sifra',
+   intro:'Každé písmeno je posunuté o 2 dopředu (C→A, D→B…). Co říká zpráva?',
+   puzzle:'<div class="cipher-block">OÊŽÜŠ</div>',
+   a:['JEŽÍŠ','JAKOB','JOZUE'], ok:0,
+   exp:'Každé písmeno posunuto o 2 zpět v abecedě: O→J(+2 zpět ne, každé o 2 dopředu=odečteme 2). Ježíš — Syn Boží, Spasitel světa.'},
+
+  {type:'sifra', badge:'🔐 Šifra', badgeClass:'tb-sifra',
+   intro:'Přelož čísla na písmena (A=1, B=2…) a zjisti, kde se Ježíš narodil.',
+   puzzle:'<div class="cipher-block">2 · 5 · 20 · 12 · 5 · 13</div>',
+   a:['BETLEM','NAZARET','JERUZALÉM'], ok:0,
+   exp:'B=2, E=5, T=20, L=12, E=5, M=13. BETLÉM — místo, kde se narodil Ježíš.'},
+
+  {type:'sifra', badge:'🔐 Šifra', badgeClass:'tb-sifra',
+   intro:'Zpráva je napsána pozpátku. Přečti jméno tohoto apoštola!',
+   puzzle:'<div class="cipher-block">RTEPe</div>',
+   a:['PETR','PAVEL','FILIP'], ok:0,
+   exp:'RTEPE pozpátku = PETR. Rybář, kterého Ježíš povolal a udělal z něj apoštola.'},
+
+  {type:'sifra', badge:'🔐 Šifra', badgeClass:'tb-sifra',
+   intro:'Každé písmeno je o 1 posunuté dopředu (B→A, C→B…). Kdo se ztratil a byl nalezen?',
+   puzzle:'<div class="cipher-block">PWDF</div>',
+   a:['OVCE','RYBA','KOZA'], ok:0,
+   exp:'P→O, W→V, D→C, F→E. OVCE — v Ježíšově podobenství pastýř hledal jednu ztracenou ovci z celého stáda.'},
+
+  {type:'sifra', badge:'🔐 Šifra', badgeClass:'tb-sifra',
+   intro:'Přelož čísla (A=1, B=2…). Co Bůh stvořil první den?',
+   puzzle:'<div class="cipher-block">19 · 22 · 5 · 20 · 12 · 15</div>',
+   a:['SVĚTLO','MOŘE','ZVÍŘATA'], ok:0,
+   exp:'S=19, V=22, Ě=?, T=20, L=12, O=15. SVĚTLO — první Boží slovo bylo: „Buď světlo!" A světlo bylo.'},
+
+  {type:'sifra', badge:'🔐 Šifra', badgeClass:'tb-sifra',
+   intro:'Zpráva je napsána pozpátku. Jaký symbol Bůh dal Noemu jako slib?',
+   puzzle:'<div class="cipher-block">AHUD</div>',
+   a:['DUHA','KŘÍŽ','HVĚZDA'], ok:0,
+   exp:'AHUD pozpátku = DUHA. Bůh umístil duhu na oblohu jako znamení slibu — nikdy více nezahubí zemi potopou.'},
+
+  {type:'sifra', badge:'🔐 Šifra', badgeClass:'tb-sifra',
+   intro:'Každá samohláska je nahrazena hvězdičkou. Doplň je a zjisti jméno!',
+   puzzle:'<div class="cipher-block">Z * CH * * S</div>',
+   a:['ZACHEUS','ZUZANA','ZEBEDEUS'], ok:0,
+   exp:'Z-A-CH-E-U-S = ZACHEUS. Malý výběrčí daní, který vylezl na strom, aby viděl Ježíše.'},
+
+  /* ─── HÁDANKY ─── */
+
+  {type:'hadanka', badge:'🎭 Hádanka', badgeClass:'tb-hadanka',
+   intro:'Přečti hádanku a uhodni, kdo nebo co to je.',
+   puzzle:'<p class="hadanka-block">Mám křídla, ale nejsem pták z lesa.<br>Přinesla jsem olivovou ratolest jako zprávu.<br>Jsem symbol míru a Ducha.<br>Kdo jsem?</p>',
+   a:['Holubice','Orel','Vrabec'], ok:0,
+   exp:'Holubice přinesla Noemu olivovou ratolest — znamení, že voda opadla. A při Ježíšově křtu sestoupil Duch svatý v podobě holubice.'},
+
+  {type:'hadanka', badge:'🎭 Hádanka', badgeClass:'tb-hadanka',
+   intro:'Přečti hádanku a uhodni, kdo nebo co to je.',
+   puzzle:'<p class="hadanka-block">Byl jsem v jámě, ve vězení, v paláci.<br>Bratrům jsem odpustil, i když mě prodali.<br>Svá sny jsem uměl vysvětlovat.<br>Kdo jsem?</p>',
+   a:['Josef','Daniel','Jonáš'], ok:0,
+   exp:'Josef — syn Jákobův. Bratři ho prodali, skončil v Egyptě, ale Bůh ho povýšil na druhého muže celé říše.'},
+
+  {type:'hadanka', badge:'🎭 Hádanka', badgeClass:'tb-hadanka',
+   intro:'Přečti hádanku a uhodni, kdo nebo co to je.',
+   puzzle:'<p class="hadanka-block">Mám sto ovcí, ale jedna se mi ztratila.<br>Hledám ji, dokud ji nenajdu.<br>Pak ji nesu na ramenou domů.<br>Kdo jsem?</p>',
+   a:['Pastýř','Otec','Král'], ok:0,
+   exp:'Pastýř z Ježíšova podobenství. Ježíš tím říkal, že Bůh hledá každého ztraceného člověka — stejně jako ten pastýř svou ovci.'},
+
+  {type:'hadanka', badge:'🎭 Hádanka', badgeClass:'tb-hadanka',
+   intro:'Přečti hádanku a uhodni, kdo nebo co to je.',
+   puzzle:'<p class="hadanka-block">Hořím, ale neshořím.<br>Mluvím, ale nejsem člověk.<br>Mojžíš mě uviděl na poušti.<br>Co jsem?</p>',
+   a:['Hořící keř','Ohnivý sloup','Hvězda'], ok:0,
+   exp:'Hořící keř — Bůh se v něm zjevil Mojžíšovi. Keř hořel, ale neshořel. Z něj Bůh povolal Mojžíše, aby vyvedl Izraelity z Egypta.'},
+
+  {type:'hadanka', badge:'🎭 Hádanka', badgeClass:'tb-hadanka',
+   intro:'Přečti hádanku a uhodni, kdo nebo co to je.',
+   puzzle:'<p class="hadanka-block">Jsem velký, silný, v brnění.<br>Každý den volám výzvu do údolí.<br>Byl jsem poražen malým chlapcem.<br>Kdo jsem?</p>',
+   a:['Goliáš','Samson','Nabúkadnesar'], ok:0,
+   exp:'Goliáš — obrovský filištínský válečník. Přesto ho porazil malý pastýř David s prakem a kamenem, protože Bůh byl na jeho straně.'},
+
+  {type:'hadanka', badge:'🎭 Hádanka', badgeClass:'tb-hadanka',
+   intro:'Přečti hádanku a uhodni, kdo nebo co to je.',
+   puzzle:'<p class="hadanka-block">Jsem malá, ale velice důležitá.<br>Ukazuji na západ — tam leží Betlém.<br>Mudrci mě sledovali celou cestu.<br>Co jsem?</p>',
+   a:['Betlémská hvězda','Měsíc','Kometa'], ok:0,
+   exp:'Betlémská hvězda vedla mudrce od východu do Betléma, kde se narodil Ježíš. Hvězda se zastavila nad místem, kde bylo dítě.'},
+
+  {type:'hadanka', badge:'🎭 Hádanka', badgeClass:'tb-hadanka',
+   intro:'Přečti hádanku a uhodni, kdo nebo co to je.',
+   puzzle:'<p class="hadanka-block">Mám čtyřicet let a čtyřicet dní, ale nejsem číslo.<br>Mojžíš v poušti, Ježíš v pokušení, déšť za Noa.<br>Co symbolizuji v Bibli?</p>',
+   a:['Zkoušku a proměnu','Ztrátu a smutek','Radost a oslavu'], ok:0,
+   exp:'Číslo 40 v Bibli symbolizuje dobu zkoušky a proměny. Mojžíš 40 let na poušti, Ježíš 40 dní v pokušení, 40 dní deště za Noa.'},
+
+  {type:'hadanka', badge:'🎭 Hádanka', badgeClass:'tb-hadanka',
+   intro:'Přečti hádanku a uhodni, kdo nebo co to je.',
+   puzzle:'<p class="hadanka-block">Jsem uvnitř velké ryby tři dny.<br>Modlím se a volám k Bohu.<br>Pak mě ryba vyvrhne na souš.<br>Kdo jsem?</p>',
+   a:['Jonáš','Daniel','Eliáš'], ok:0,
+   exp:'Jonáš utekl před Božím úkolem, ale Bůh ho nenechal zmizet. Po třech dnech v rybě byl Jonáš zachráněn a šel splnit svůj úkol.'},
+
+  {type:'hadanka', badge:'🎭 Hádanka', badgeClass:'tb-hadanka',
+   intro:'Přečti hádanku a uhodni, kdo nebo co to je.',
+   puzzle:'<p class="hadanka-block">Jsem vzácná, jedna z mnoha.<br>Obchodník prodal vše, co měl, jen aby mě koupil.<br>Ježíš říká, že tak vypadá Boží království.<br>Co jsem?</p>',
+   a:['Vzácná perla','Zlatá mince','Ztracenou ovce'], ok:0,
+   exp:'Vzácná perla z Ježíšova podobenství. Obchodník ji našel a prodal vše ostatní, jen aby ji získal — tak cenné je Boží království.'},
+
+  {type:'hadanka', badge:'🎭 Hádanka', badgeClass:'tb-hadanka',
+   intro:'Přečti hádanku a uhodni, kdo nebo co to je.',
+   puzzle:'<p class="hadanka-block">Přišel jsem v noci za Ježíšem.<br>Byl jsem farizej, ale chtěl jsem poznat pravdu.<br>Ježíš mi řekl: „Musíte se narodit znovu."<br>Kdo jsem?</p>',
+   a:['Nikodém','Zacheus','Lazar'], ok:0,
+   exp:'Nikodém přišel za Ježíšem tajně v noci, aby se ho ptal. Ježíš mu řekl o novém zrození z Ducha — z toho setkání pochází slavný verš Jan 3,16.'},
+
+  /* ─── DOPLŇ VERŠ ─── */
+
+  {type:'doplnvers', badge:'📖 Doplň verš', badgeClass:'tb-doplnvers',
+   intro:'Doplň chybějící slovo do Bible verše.',
+   puzzle:'<p class="vers-block">„Neboť Bůh tak miloval <span class="blank">?</span>, že dal svého jednorozeného Syna."<br><small style="color:#AFA9EC">Jan 3,16</small></p>',
+   a:['svět','Izrael','církev'], ok:0,
+   exp:'„Neboť Bůh tak miloval SVĚT…" Jan 3,16 je nejznámější verš Bible. Říká, že Boží láska platí pro všechny lidi na světě.'},
+
+  {type:'doplnvers', badge:'📖 Doplň verš', badgeClass:'tb-doplnvers',
+   intro:'Doplň chybějící slovo do Bible verše.',
+   puzzle:'<p class="vers-block">„Hospodin je můj <span class="blank">?</span>, nebudu mít nedostatku."<br><small style="color:#AFA9EC">Žalm 23,1</small></p>',
+   a:['pastýř','král','otec'], ok:0,
+   exp:'Žalm 23 napsal David a začíná: „Hospodin je můj PASTÝŘ." David jako pastýř ovcí dobře věděl, co pastýř pro ovce znamená — péči, ochranu a vedení.'},
+
+  {type:'doplnvers', badge:'📖 Doplň verš', badgeClass:'tb-doplnvers',
+   intro:'Doplň chybějící slovo do Bible verše.',
+   puzzle:'<p class="vers-block">„Na počátku stvořil <span class="blank">?</span> nebe a zemi."<br><small style="color:#AFA9EC">Genesis 1,1</small></p>',
+   a:['Bůh','Bůh a člověk','anděl'], ok:0,
+   exp:'První věta celé Bible: „Na počátku stvořil BŮH nebe a zemi." Celé stvoření — hvězdy, moře, zvířata, lidé — to vše je Boží dílo.'},
+
+  {type:'doplnvers', badge:'📖 Doplň verš', badgeClass:'tb-doplnvers',
+   intro:'Doplň chybějící slovo do Bible verše.',
+   puzzle:'<p class="vers-block">„Já jsem cesta, <span class="blank">?</span> a život."<br><small style="color:#AFA9EC">Jan 14,6</small></p>',
+   a:['pravda','světlo','láska'], ok:0,
+   exp:'Ježíš řekl: „Já jsem cesta, PRAVDA a život." Tím říká, že on sám je jedinou cestou k Bohu — ne pravidla, ale osobní vztah s ním.'},
+
+  {type:'doplnvers', badge:'📖 Doplň verš', badgeClass:'tb-doplnvers',
+   intro:'Doplň chybějící slovo do Bible verše.',
+   puzzle:'<p class="vers-block">„Ježíš Kristus je <span class="blank">?</span> včera i dnes i navěky."<br><small style="color:#AFA9EC">Židům 13,8</small></p>',
+   a:['týž','zde','živý'], ok:0,
+   exp:'„Ježíš Kristus je TÝŽ včera i dnes i navěky." Tento verš říká, že Ježíš se nemění — co platilo tehdy, platí dnes i pro tebe.'},
+
+  {type:'doplnvers', badge:'📖 Doplň verš', badgeClass:'tb-doplnvers',
+   intro:'Doplň chybějící slovo do Bible verše.',
+   puzzle:'<p class="vers-block">„Proste a bude vám <span class="blank">?</span>, hledejte a naleznete."<br><small style="color:#AFA9EC">Matouš 7,7</small></p>',
+   a:['dáno','řečeno','ukázáno'], ok:0,
+   exp:'„Proste a bude vám DÁNO, hledejte a naleznete, tlučte a bude vám otevřeno." Ježíš nás vyzývá, abychom se modlili — Bůh slyší.'},
+
+  {type:'doplnvers', badge:'📖 Doplň verš', badgeClass:'tb-doplnvers',
+   intro:'Doplň chybějící slovo do Bible verše.',
+   puzzle:'<p class="vers-block">„Miluj Hospodina, Boha svého, celým svým <span class="blank">?</span>…"<br><small style="color:#AFA9EC">Matouš 22,37</small></p>',
+   a:['srdcem','rozumem','životem'], ok:0,
+   exp:'„Miluj Hospodina, Boha svého, celým svým SRDCEM, celou svou duší a celou svou myslí." Toto je první a největší přikázání.'},
+
+  {type:'doplnvers', badge:'📖 Doplň verš', badgeClass:'tb-doplnvers',
+   intro:'Doplň chybějící slovo do Bible verše.',
+   puzzle:'<p class="vers-block">„Tvé slovo je <span class="blank">?</span> mé noze a světlem mé stezce."<br><small style="color:#AFA9EC">Žalm 119,105</small></p>',
+   a:['lampou','silou','oporou'], ok:0,
+   exp:'„Tvé slovo je LAMPOU mé noze a světlem mé stezce." Bible je jako lampa — ukazuje cestu tam, kde je tma a nejistota.'},
+
+  {type:'doplnvers', badge:'📖 Doplň verš', badgeClass:'tb-doplnvers',
+   intro:'Doplň chybějící slovo do Bible verše.',
+   puzzle:'<p class="vers-block">„I když půjdu údolím stínu <span class="blank">?</span>, nebudu se bát."<br><small style="color:#AFA9EC">Žalm 23,4</small></p>',
+   a:['smrti','nemoci','smutku'], ok:0,
+   exp:'„I když půjdu údolím stínu SMRTI, nebudu se bát — vždyť ty jsi se mnou." David věřil, že Bůh ho provází i ve chvílích největšího strachu.'},
+
+  {type:'doplnvers', badge:'📖 Doplň verš', badgeClass:'tb-doplnvers',
+   intro:'Doplň chybějící slovo do Bible verše.',
+   puzzle:'<p class="vers-block">„Milujte své <span class="blank">?</span> a modlete se za ty, kdo vás pronásledují."<br><small style="color:#AFA9EC">Matouš 5,44</small></p>',
+   a:['nepřátele','přátele','bližní'], ok:0,
+   exp:'„Milujte své NEPŘÁTELE…" Toto Ježíšovo učení bylo revoluční. Říká, že láska nemá hranice — platí i pro ty, kteří nám ubližují.'},
+
+  /* ─── KDO JSEM? ─── */
+
+  {type:'kdojsem', badge:'🕵️ Kdo jsem?', badgeClass:'tb-kdojsem',
+   intro:'Přečti tři nápovědy a uhodni, kdo je tato biblická postava.',
+   puzzle:'<ul class="clue-list"><li class="clue-item"><span class="clue-num">Nápověda 1</span>Byl jsem rybář na Galilejském jezeře.</li><li class="clue-item"><span class="clue-num">Nápověda 2</span>Ježíš mi dal jméno znamenající „skála".</li><li class="clue-item"><span class="clue-num">Nápověda 3</span>Třikrát jsem zapřel Ježíše, ale on mi odpustil.</li></ul>',
+   a:['Petr','Jan','Ondřej'], ok:0,
+   exp:'Petr — původně Šimon, rybář. Ježíš mu dal jméno Petr (skála). Přes své selhání se stal vůdcem první církve.'},
+
+  {type:'kdojsem', badge:'🕵️ Kdo jsem?', badgeClass:'tb-kdojsem',
+   intro:'Přečti tři nápovědy a uhodni, kdo je tato biblická postava.',
+   puzzle:'<ul class="clue-list"><li class="clue-item"><span class="clue-num">Nápověda 1</span>Byl jsem nejmladší ze čtyř synů Izaje.</li><li class="clue-item"><span class="clue-num">Nápověda 2</span>Pás ovce a hrál na harfu.</li><li class="clue-item"><span class="clue-num">Nápověda 3</span>Porazil jsem obra prakem a kamenem.</li></ul>',
+   a:['David','Jonatan','Samuel'], ok:0,
+   exp:'David — nejmladší syn Izajův, pastýř a harfeník. Porazil Goliáše a stal se největším izraelským králem. Napsal mnoho žalmů.'},
+
+  {type:'kdojsem', badge:'🕵️ Kdo jsem?', badgeClass:'tb-kdojsem',
+   intro:'Přečti tři nápovědy a uhodni, kdo je tato biblická postava.',
+   puzzle:'<ul class="clue-list"><li class="clue-item"><span class="clue-num">Nápověda 1</span>Pronásledoval křesťany a byl přitom přesvědčen, že dělá správnou věc.</li><li class="clue-item"><span class="clue-num">Nápověda 2</span>Na cestě do Damašku mě oslnilo světlo a uslyšel jsem hlas.</li><li class="clue-item"><span class="clue-num">Nápověda 3</span>Napsal velkou část Nového zákona.</li></ul>',
+   a:['Pavel','Petr','Barnabáš'], ok:0,
+   exp:'Pavel (původně Saul) — největší obrat v Bibli. Z pronásledovatele se stal největším misionářem. Napsal 13 listů Nového zákona.'},
+
+  {type:'kdojsem', badge:'🕵️ Kdo jsem?', badgeClass:'tb-kdojsem',
+   intro:'Přečti tři nápovědy a uhodni, kdo je tato biblická postava.',
+   puzzle:'<ul class="clue-list"><li class="clue-item"><span class="clue-num">Nápověda 1</span>Byl jsem oblíbený syn svého otce, který mi dal pestrobarevný plášť.</li><li class="clue-item"><span class="clue-num">Nápověda 2</span>Bratři mě prodali obchodníkům do Egypta.</li><li class="clue-item"><span class="clue-num">Nápověda 3</span>Uměl vykládat sny a zachránil Egypt před hladem.</li></ul>',
+   a:['Josef','Benjamin','Rúben'], ok:0,
+   exp:'Josef — syn Jákoba a Ráchel. Přes všechna utrpení ho Bůh povýšil na správce celého Egypta. Svým bratrům odpustil a zachránil je.'},
+
+  {type:'kdojsem', badge:'🕵️ Kdo jsem?', badgeClass:'tb-kdojsem',
+   intro:'Přečti tři nápovědy a uhodni, kdo je tato biblická postava.',
+   puzzle:'<ul class="clue-list"><li class="clue-item"><span class="clue-num">Nápověda 1</span>Bůh mě povolal u hořícího keře, který nehořel.</li><li class="clue-item"><span class="clue-num">Nápověda 2</span>Vedl jsem Izraelity přes Rudé moře.</li><li class="clue-item"><span class="clue-num">Nápověda 3</span>Přinesl jsem z hory Sinaj Deset přikázání.</li></ul>',
+   a:['Mojžíš','Jozue','Áron'], ok:0,
+   exp:'Mojžíš — největší prorok Starého zákona. Vyvedl Izraelity z Egypta (Exodus), přijal Desatero a vedl lid čtyřicet let pouští.'},
+
+  {type:'kdojsem', badge:'🕵️ Kdo jsem?', badgeClass:'tb-kdojsem',
+   intro:'Přečti tři nápovědy a uhodni, kdo je tato biblická postava.',
+   puzzle:'<ul class="clue-list"><li class="clue-item"><span class="clue-num">Nápověda 1</span>Byl jsem malý — nejmenší v celém Jerichu.</li><li class="clue-item"><span class="clue-num">Nápověda 2</span>Vylezl jsem na strom, abych Ježíše viděl.</li><li class="clue-item"><span class="clue-num">Nápověda 3</span>Dal jsem polovinu svého majetku chudým.</li></ul>',
+   a:['Zacheus','Bartimeus','Nikodém'], ok:0,
+   exp:'Zacheus — výběrčí daní z Jericha. Setkání s Ježíšem ho změnilo — z podvodníka se stal štědrým člověkem, který napravil svá provinění.'},
+
+  {type:'kdojsem', badge:'🕵️ Kdo jsem?', badgeClass:'tb-kdojsem',
+   intro:'Přečti tři nápovědy a uhodni, kdo je tato biblická postava.',
+   puzzle:'<ul class="clue-list"><li class="clue-item"><span class="clue-num">Nápověda 1</span>Byl jsem Ježíšův přítel a zemřel jsem.</li><li class="clue-item"><span class="clue-num">Nápověda 2</span>Byl jsem pohřben čtyři dny v hrobě.</li><li class="clue-item"><span class="clue-num">Nápověda 3</span>Ježíš mě zavolal: „Pojď ven!" A já vstal.</li></ul>',
+   a:['Lazar','Jair','Eutychus'], ok:0,
+   exp:'Lazar z Betanie — Ježíšův přítel. Ježíš plakal nad jeho hrobem a pak ho vzkřísil. Byl to jeden z největších Ježíšových zázraků.'},
+
+  /* ─── ANAGRAMY ─── */
+
+  {type:'anagram', badge:'🔀 Anagram', badgeClass:'tb-anagram',
+   intro:'Přeházel/a jsem písmena. Složi z nich správné slovo — jméno nebo místo z Bible!',
+   puzzle:'<div class="anagram-block">JÁBER</div>',
+   a:['BERÁNEK','BARJE','BERÁN'], ok:0,
+   exp:'JÁBER → BERÁNEK (přeházená písmena). Beránek je v Bibli symbolem nevinnosti a oběti — Ježíš je nazýván „Beránkem Božím".'},
+
+  {type:'anagram', badge:'🔀 Anagram', badgeClass:'tb-anagram',
+   intro:'Přeházel/a jsem písmena. Složi z nich správné slovo — jméno nebo místo z Bible!',
+   puzzle:'<div class="anagram-block">AVEDR</div>',
+   a:['DAVID','DEVRA','ARDVE'], ok:0,
+   exp:'AVEDR → DAVID. Král David — pastýř, bojovník, básník a muž podle Božího srdce.'},
+
+  {type:'anagram', badge:'🔀 Anagram', badgeClass:'tb-anagram',
+   intro:'Přeházel/a jsem písmena. Složi z nich správné slovo — jméno nebo místo z Bible!',
+   puzzle:'<div class="anagram-block">ŽÍŠEJ</div>',
+   a:['JEŽÍŠ','ŽÍŠEJ','ŠÍŽE'], ok:0,
+   exp:'ŽÍŠEJ → JEŽÍŠ. Syn Boží, Spasitel. Jméno Ježíš pochází z hebrejského „Jehošua" a znamená „Bůh zachraňuje".'},
+
+  {type:'anagram', badge:'🔀 Anagram', badgeClass:'tb-anagram',
+   intro:'Přeházel/a jsem písmena. Složi z nich správné slovo — místo z Bible!',
+   puzzle:'<div class="anagram-block">LEMÉBT</div>',
+   a:['BETLÉM','MELTÉB','TÉMLEB'], ok:0,
+   exp:'LEMÉBT → BETLÉM. Město v Judsku, kde se narodil Ježíš. David pocházel také z Betléma.'},
+
+  {type:'anagram', badge:'🔀 Anagram', badgeClass:'tb-anagram',
+   intro:'Přeházel/a jsem písmena. Složi z nich správné slovo — jméno z Bible!',
+   puzzle:'<div class="anagram-block">ŠÁNJO</div>',
+   a:['JONÁŠ','ŠÁNOJ','ŠNOAJ'], ok:0,
+   exp:'ŠÁNJO → JONÁŠ. Prorok, který strávil tři dny v břiše velké ryby. Nakonec šel splnit svůj úkol do Ninive.'},
+
+  {type:'anagram', badge:'🔀 Anagram', badgeClass:'tb-anagram',
+   intro:'Přeházel/a jsem písmena. Složi z nich správné slovo — jméno z Bible!',
+   puzzle:'<div class="anagram-block">IARMA</div>',
+   a:['MARIA','IRAAM','RAIMA'], ok:0,
+   exp:'IARMA → MARIA. Matka Ježíše. Anděl Gabriel jí oznámil, že bude mít syna — a ona s vírou přijala: „Ať se mi stane podle tvého slova."'},
+
+  {type:'anagram', badge:'🔀 Anagram', badgeClass:'tb-anagram',
+   intro:'Přeházel/a jsem písmena. Složi z nich správné jméno z Bible!',
+   puzzle:'<div class="anagram-block">AZLARÉ</div>',
+   a:['LÁZAR','ZARÁLE','LARÉZA'], ok:0,
+   exp:'AZLARÉ → LÁZAR. Ježíšův přítel, kterého vzkřísil z mrtvých po čtyřech dnech. Příběh Lazara ukazuje Ježíšovu moc nad smrtí.'},
+
+  {type:'anagram', badge:'🔀 Anagram', badgeClass:'tb-anagram',
+   intro:'Přeházel/a jsem písmena. Složi z nich správné slovo z Bible!',
+   puzzle:'<div class="anagram-block">RUABH</div>',
+   a:['RAHAB','BURHA','RUABH'], ok:0,
+   exp:'RUABH → RAHAB. Nebo jinak: přeházeným slovem mohlo být BAHUR. V Bibli je Rahab žena z Jericha, která ukryla izraelské zvědy a byla zachráněna.'},
+
+  {type:'anagram', badge:'🔀 Anagram', badgeClass:'tb-anagram',
+   intro:'Přeházel/a jsem písmena. Složi z nich slovo — co Ježíš proměnil ve víno?',
+   puzzle:'<div class="anagram-block">OVDA</div>',
+   a:['VODA','DOVA','AVOD'], ok:0,
+   exp:'OVDA → VODA. Na svatbě v Káni Galilejské proměnil Ježíš vodu ve víno — to byl jeho první zázrak.'},
+
+  {type:'anagram', badge:'🔀 Anagram', badgeClass:'tb-anagram',
+   intro:'Přeházel/a jsem písmena. Složi z nich slovo — symbol Božího slibu Noemu!',
+   puzzle:'<div class="anagram-block">UHAD</div>',
+   a:['DUHA','DAHU','AHUD'], ok:0,
+   exp:'UHAD → DUHA. Bůh umístil duhu na oblohu jako věčné znamení slibu — nikdy více nezahubí zemi potopou.'}
+
+];
+
+var questions = [];
+var currentIdx = 0;
+var score = 0;
+var answered = false;
+var QUIZ_LEN = 15;
+
+function shuffle(arr){
+  var a=arr.slice();
+  for(var i=a.length-1;i>0;i--){
+    var j=Math.floor(Math.random()*(i+1));
+    var t=a[i];a[i]=a[j];a[j]=t;
+  }
+  return a;
+}
+
+function startQuiz(){
+  questions=shuffle(ALL).slice(0,QUIZ_LEN);
+  currentIdx=0; score=0;
+  document.getElementById('start-view').style.display='none';
+  document.getElementById('result-view').style.display='none';
+  document.getElementById('quiz-view').style.display='block';
+  renderQuestion();
+}
+
+function renderQuestion(){
+  answered=false;
+  var q=questions[currentIdx];
+
+  // Shuffle answers
+  var opts=q.a.map(function(t,i){return{text:t,orig:i};});
+  opts=shuffle(opts);
+  var correctNew=opts.findIndex(function(o){return o.orig===q.ok;});
+
+  document.getElementById('prog-label').textContent=(currentIdx+1)+' / '+QUIZ_LEN;
+  document.getElementById('score-badge').textContent='✓ '+score;
+  document.getElementById('prog-fill').style.width=(currentIdx/QUIZ_LEN*100)+'%';
+  document.getElementById('explain-box').style.display='none';
+  document.getElementById('next-btn').style.display='none';
+  document.getElementById('next-btn').textContent=currentIdx<QUIZ_LEN-1?'Další rébus →':'Zobrazit výsledek →';
+
+  // Build question card
+  var card=document.getElementById('q-card');
+  card.innerHTML=
+    '<span class="type-badge '+q.badgeClass+'">'+q.badge+'</span>'+
+    '<p class="q-puzzle" style="margin-bottom:.3rem">'+q.intro+'</p>'+
+    q.puzzle;
+
+  // Build answers
+  var adiv=document.getElementById('answers');
+  adiv.innerHTML='';
+  opts.forEach(function(opt,i){
+    var btn=document.createElement('button');
+    btn.className='ans-btn';
+    btn.textContent=opt.text;
+    btn.onclick=function(){if(!answered)selectAnswer(i,correctNew,q.exp);};
+    adiv.appendChild(btn);
+  });
+}
+
+function selectAnswer(chosen,correct,exp){
+  answered=true;
+  var btns=document.querySelectorAll('.ans-btn');
+  var ok=chosen===correct;
+  if(ok) score++;
+  btns.forEach(function(btn,i){
+    if(i===correct) btn.classList.add('correct');
+    else if(i===chosen&&!ok) btn.classList.add('wrong');
+    else btn.classList.add('dimmed');
+    btn.style.cursor='default';
+  });
+  var box=document.getElementById('explain-box');
+  document.getElementById('explain-icon').textContent=ok?'🎉':'💡';
+  document.getElementById('explain-text').textContent=exp;
+  box.style.display='block';
+  box.style.background=ok?'#E1F5EE':'#FAEEDA';
+  document.getElementById('explain-text').style.color=ok?'#085041':'#633806';
+  document.getElementById('next-btn').style.display='block';
+  document.getElementById('score-badge').textContent='✓ '+score;
+}
+
+function nextQuestion(){
+  currentIdx++;
+  if(currentIdx>=QUIZ_LEN){showResult();}
+  else{renderQuestion();window.scrollTo(0,0);}
+}
+
+function showResult(){
+  document.getElementById('quiz-view').style.display='none';
+  document.getElementById('result-view').style.display='block';
+  var pct=score/QUIZ_LEN;
+  var ico,title,msg;
+  if(pct>=0.9){ico='🏆';title='Mistr rébusů!';msg='Šifry, hádanky, anagramy — zvládl/a jsi vše. Jsi opravdový biblický detektiv!';}
+  else if(pct>=0.7){ico='🌟';title='Výborně!';msg='Skvělý výkon! Rébusy ti jdou. Zkus znovu — dostaneš úplně jiné hádanky.';}
+  else if(pct>=0.5){ico='🧩';title='Dobrá práce!';msg='Základ máš. Každým kolem se zlepšuješ — zkus to ještě jednou!';}
+  else{ico='🔍';title='Detektiv v tréninku!';msg='Rébusy jsou záludné, ale cvičením to půjde. Zkus to znovu!';}
+  document.getElementById('result-ico').textContent=ico;
+  document.getElementById('result-title').textContent=title;
+  document.getElementById('result-score').textContent=score;
+  document.getElementById('result-max').textContent='z '+QUIZ_LEN+' správně';
+  document.getElementById('result-msg').textContent=msg;
+  window.scrollTo(0,0);
+}
+</script>
+</body>
+</html>
