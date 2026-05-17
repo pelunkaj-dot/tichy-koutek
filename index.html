@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tichý koutek</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✝</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{min-height:100dvh}
+body{background:#F5F0E8;font-family:'Nunito',sans-serif;max-width:640px;margin:0 auto;display:flex;flex-direction:column}
+.hdr{background:#3C3489;padding:2.5rem 1.5rem 2rem;text-align:center;border-radius:0 0 32px 32px}
+.cross{width:36px;height:36px;margin:0 auto 14px;position:relative}
+.cross::before{content:'';position:absolute;left:50%;top:0;transform:translateX(-50%);width:8px;height:36px;background:#CECBF6;border-radius:4px}
+.cross::after{content:'';position:absolute;top:10px;left:0;width:36px;height:8px;background:#CECBF6;border-radius:4px}
+h1{font-family:'Lora',serif;font-size:30px;font-weight:600;color:#EEEDFE;letter-spacing:.4px}
+.tagline{font-size:14px;color:#AFA9EC;margin-top:7px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:1.5rem 1rem;flex:1}
+.card{border-radius:20px;padding:1.4rem 1.1rem 1.2rem;display:flex;flex-direction:column;gap:10px;cursor:pointer;border:none;text-align:left;text-decoration:none;transition:transform .12s ease;position:relative;min-height:168px}
+.card:active{transform:scale(.95)}
+.ico-wrap{width:54px;height:54px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:28px}
+.card-name{font-family:'Lora',serif;font-size:18px;font-weight:600;line-height:1.2}
+.card-hint{font-size:12.5px;line-height:1.5}
+.card-age{font-size:10px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;padding:3px 10px;border-radius:12px;display:inline-block;margin-top:auto}
+.soon{position:absolute;top:12px;right:12px;background:rgba(0,0,0,.1);color:rgba(0,0,0,.35);font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.6px;padding:3px 8px;border-radius:10px}
+.ca{background:#FAEEDA}.ca .ico-wrap{background:#FAC775}.ca .card-name{color:#633806}.ca .card-hint{color:#854F0B}.ca .card-age{background:#FAC775;color:#412402}
+.ct{background:#E1F5EE}.ct .ico-wrap{background:#9FE1CB}.ct .card-name{color:#085041}.ct .card-hint{color:#0F6E56}.ct .card-age{background:#9FE1CB;color:#04342C}
+.cp{background:#EEEDFE}.cp .ico-wrap{background:#CECBF6}.cp .card-name{color:#26215C}.cp .card-hint{color:#3C3489}.cp .card-age{background:#CECBF6;color:#26215C}
+.cc{background:#FAECE7}.cc .ico-wrap{background:#F5C4B3}.cc .card-name{color:#4A1B0C}.cc .card-hint{color:#712B13}.cc .card-age{background:#F5C4B3;color:#4A1B0C}
+footer{text-align:center;font-size:13px;color:#8B8680;padding:.75rem 1rem 2.5rem;line-height:1}
+.ft-row{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap}
+.ft-pill{display:inline-flex;align-items:center;gap:6px;background:rgba(0,0,0,.07);border-radius:20px;padding:6px 14px;margin:4px 0}
+.toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:#26215C;color:#EEEDFE;font-family:'Nunito',sans-serif;font-size:14px;font-weight:600;padding:12px 24px;border-radius:20px;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;z-index:99}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+<header class="hdr">
+  <div class="cross" aria-hidden="true"></div>
+  <h1>Tichý koutek</h1>
+  <p class="tagline">Vyber si svůj koutek</p>
+</header>
+<main>
+  <nav class="grid">
+    <a href="pribeharna.html" class="card ca">
+      <div class="ico-wrap">📖</div>
+      <span class="card-name">Příběhárna</span>
+      <span class="card-hint">Příběhy z Bible s obrázky</span>
+      <span class="card-age">všechny věky</span>
+    </a>
+    <button onclick="brzy()" class="card ct">
+      <div class="ico-wrap">🎨</div>
+      <span class="card-name">Kreslírna</span>
+      <span class="card-hint">Omalovánky prstem</span>
+      <span class="card-age">4–8 let</span>
+      <span class="soon">Brzy</span>
+    </button>
+    <button onclick="brzy()" class="card cp">
+      <div class="ico-wrap">💡</div>
+      <span class="card-name">Kvízárna</span>
+      <span class="card-hint">Kvízy a hádanky ze Slova</span>
+      <span class="card-age">8–14 let</span>
+      <span class="soon">Brzy</span>
+    </button>
+    <button onclick="brzy()" class="card cc">
+      <div class="ico-wrap">🧩</div>
+      <span class="card-name">Rébusnárna</span>
+      <span class="card-hint">Rébusy a logické hádanky</span>
+      <span class="card-age">10–14 let</span>
+      <span class="soon">Brzy</span>
+    </button>
+  </nav>
+</main>
+<footer>
+  <div class="ft-row">
+    <span class="ft-pill">🔕 Vypni zvuk telefonu</span>
+    <span class="ft-pill">🤫 Nevyrušuj ostatní</span>
+  </div>
+</footer>
+<div class="toast" id="toast">Tento koutek brzy otevřeme! 🔨</div>
+<script>
+function brzy(){
+  const t=document.getElementById('toast');
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer=setTimeout(()=>t.classList.remove('show'),2200);
+}
+</script>
+</body>
+</html>
