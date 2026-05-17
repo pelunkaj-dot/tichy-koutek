@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>Skládačka – Tichý koutek</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+body{background:#F5F0E8;font-family:'Nunito',sans-serif;max-width:480px;margin:0 auto;min-height:100dvh;overflow-x:hidden}
+
+/* HEADER */
+.hdr{background:#1D9E75;padding:1.2rem 1rem 1.1rem;display:flex;align-items:center;gap:.8rem;border-radius:0 0 22px 22px}
+.back-btn{background:rgba(255,255,255,.18);border:none;color:white;font-family:'Nunito',sans-serif;font-size:13px;font-weight:800;padding:8px 14px;border-radius:12px;cursor:pointer;text-decoration:none;display:inline-block;flex-shrink:0}
+.hdr-text h1{font-size:20px;font-weight:800;color:white}
+.hdr-text p{font-size:11px;color:rgba(255,255,255,.7);margin-top:1px}
+
+/* SELECT VIEW */
+.puzzles-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:12px}
+.pcard{border-radius:18px;overflow:hidden;cursor:pointer;border:3px solid transparent;transition:transform .12s;background:white;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.pcard:active{transform:scale(.93)}
+.pcard svg{width:100%;height:auto;display:block}
+.pcard-name{font-size:13px;font-weight:800;padding:8px 10px 10px;color:#2C2C2A;line-height:1.2}
+
+/* GAME VIEW */
+#game-view{display:none;flex-direction:column;min-height:100dvh}
+.game-hdr{background:#1D9E75;padding:1rem;display:flex;align-items:center;gap:.7rem;border-radius:0 0 22px 22px}
+.game-title{font-size:16px;font-weight:800;color:white;flex:1}
+.progress-badge{background:rgba(255,255,255,.22);color:white;font-size:13px;font-weight:800;padding:5px 12px;border-radius:12px;white-space:nowrap;flex-shrink:0}
+
+/* REFERENČNÍ OBRÁZEK */
+.ref-wrap{padding:10px 12px 0;display:flex;align-items:center;gap:10px}
+.ref-label{font-size:11px;font-weight:800;color:#888;white-space:nowrap}
+.ref-img{border-radius:10px;overflow:hidden;border:2.5px solid #1D9E75;flex-shrink:0}
+.ref-img svg{display:block;width:120px;height:80px}
+
+/* BOARD */
+.board{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:10px 12px}
+.slot{aspect-ratio:3/2;border-radius:12px;border:2.5px dashed rgba(0,0,0,.2);overflow:hidden;cursor:pointer;transition:border-color .15s,box-shadow .15s;position:relative;background:rgba(0,0,0,.04)}
+.slot.filled{border-style:solid;border-color:#1D9E75;cursor:default}
+.slot.correct-flash{box-shadow:0 0 0 4px #1D9E75;animation:correct-pop .35s ease}
+.slot.wrong-flash{border-color:#E24B4A !important;box-shadow:0 0 0 3px #E24B4A;animation:shake .35s ease}
+.slot svg{width:100%;height:100%;display:block}
+.slot-num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:22px;opacity:.18;pointer-events:none}
+
+/* TRAY */
+.tray-label{font-size:11px;font-weight:800;color:#888;padding:4px 12px 0;text-transform:uppercase;letter-spacing:.5px}
+.tray{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:6px 12px 16px}
+.piece{aspect-ratio:3/2;border-radius:12px;border:3px solid transparent;overflow:hidden;cursor:pointer;transition:border-color .15s,transform .15s,box-shadow .15s;box-shadow:0 2px 8px rgba(0,0,0,.12)}
+.piece:active{transform:scale(.94)}
+.piece.selected{border-color:#3C3489;transform:scale(1.06);box-shadow:0 4px 14px rgba(60,52,137,.35)}
+.piece svg{width:100%;height:100%;display:block}
+
+/* WIN */
+#win-overlay{display:none;position:fixed;inset:0;background:rgba(20,18,44,.88);z-index:100;flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center;padding:2rem}
+#win-overlay.show{display:flex}
+.win-emoji{font-size:80px;animation:pop .5s cubic-bezier(.34,1.56,.64,1)}
+.win-title{font-size:32px;font-weight:900;color:white}
+.win-sub{font-size:15px;color:rgba(255,255,255,.6);font-weight:700}
+.win-btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:6px}
+.win-btn{font-family:'Nunito',sans-serif;font-size:15px;font-weight:800;padding:13px 26px;border-radius:16px;border:none;cursor:pointer}
+.btn-primary{background:#EF9F27;color:#2C1A00}
+.btn-secondary{background:rgba(255,255,255,.15);color:white}
+#confetti-canvas{position:fixed;inset:0;pointer-events:none;z-index:99}
+
+@keyframes correct-pop{0%{transform:scale(1)}50%{transform:scale(1.04)}100%{transform:scale(1)}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+@keyframes pop{0%{transform:scale(0) rotate(-10deg)}80%{transform:scale(1.15)}100%{transform:scale(1)}}
+</style>
+</head>
+<body>
+
+<!-- SELECT VIEW -->
+<div id="select-view">
+  <header class="hdr">
+    <a href="index.html" class="back-btn">← Zpět</a>
+    <div class="hdr-text"><h1>Skládačka</h1><p>Vyber si obrázek</p></div>
+  </header>
+  <div class="puzzles-grid" id="puzzles-grid"></div>
+</div>
+
+<!-- GAME VIEW -->
+<div id="game-view">
+  <header class="game-hdr">
+    <button class="back-btn" onclick="showSelect()">← Zpět</button>
+    <span class="game-title" id="game-title">Skládačka</span>
+    <span class="progress-badge"><span id="prog">0</span>&nbsp;/&nbsp;6</span>
+  </header>
+  <div class="ref-wrap">
+    <span class="ref-label">Nápověda:</span>
+    <div class="ref-img"><svg id="ref-svg" viewBox="0 0 360 240" xmlns="http://www.w3.org/2000/svg"></svg></div>
+  </div>
+  <div class="board" id="board"></div>
+  <div class="tray-label">Dílky:</div>
+  <div class="tray" id="tray"></div>
+</div>
+
+<!-- WIN -->
+<div id="win-overlay">
+  <div class="win-emoji">🎊</div>
+  <div class="win-title">Výborně!</div>
+  <div class="win-sub">Skládačka je hotová!</div>
+  <div class="win-btns">
+    <button class="win-btn btn-primary" onclick="replayPuzzle()">Zkusit znovu</button>
+    <button class="win-btn btn-secondary" onclick="showSelect()">Jiný obrázek</button>
+  </div>
+</div>
+<canvas id="confetti-canvas"></canvas>
+
+<script>
+// ═══════════════════════════════════════════════
+// SVG SCÉNY (viewBox 0 0 360 240)
+// Dělí se na 6 dílků: 2 sloupce × 3 řady
+// Každý dílek: 180×80 px v SVG prostoru
+// ═══════════════════════════════════════════════
+const SCENES = {
+
+archa:`
+<rect width="360" height="130" fill="#C8DFFE"/>
+<rect y="130" width="360" height="110" fill="#1D6AAD"/>
+<path d="M0 138 Q45 128 90 138 Q135 148 180 138 Q225 128 270 138 Q315 148 360 138" fill="none" stroke="white" stroke-width="3" opacity=".5"/>
+<path d="M0 154 Q60 144 120 154 Q180 164 240 154 Q300 144 360 154" fill="none" stroke="white" stroke-width="2.5" opacity=".35"/>
+<path d="M0 170 Q60 162 120 170 Q180 178 240 170 Q300 162 360 170" fill="none" stroke="white" stroke-width="2" opacity=".25"/>
+<path d="M50 105 Q180 35 310 105" fill="none" stroke="#E24B4A" stroke-width="6" stroke-linecap="round"/>
+<path d="M60 105 Q180 47 300 105" fill="none" stroke="#EF9F27" stroke-width="5" stroke-linecap="round"/>
+<path d="M70 105 Q180 59 290 105" fill="none" stroke="#639922" stroke-width="5" stroke-linecap="round"/>
+<path d="M80 105 Q180 71 280 105" fill="none" stroke="#378ADD" stroke-width="4" stroke-linecap="round"/>
+<ellipse cx="68" cy="28" rx="32" ry="18" fill="white" opacity=".9"/>
+<circle cx="55" cy="26" r="14" fill="white" opacity=".9"/>
+<circle cx="80" cy="22" r="12" fill="white" opacity=".9"/>
+<ellipse cx="295" cy="36" rx="30" ry="16" fill="white" opacity=".85"/>
+<circle cx="282" cy="34" r="13" fill="white" opacity=".85"/>
+<circle cx="308" cy="30" r="11" fill="white" opacity=".85"/>
+<path d="M74 108 L286 108 L266 145 L94 145 Z" fill="#854F0B"/>
+<rect x="110" y="62" width="140" height="50" fill="#633806" rx="4"/>
+<rect x="130" y="42" width="100" height="24" fill="#854F0B" rx="3"/>
+<polygon points="130,44 180,16 230,44" fill="#412402"/>
+<rect x="112" y="70" width="28" height="24" fill="#C8DFFE" rx="3"/>
+<rect x="166" y="70" width="28" height="24" fill="#C8DFFE" rx="3"/>
+<rect x="220" y="70" width="28" height="24" fill="#C8DFFE" rx="3"/>
+<circle cx="126" cy="82" r="9" fill="#FAC775"/>
+<circle cx="122" cy="79" r="3" fill="#2C1A00"/>
+<rect x="176" y="70" width="7" height="20" fill="#EF9F27" rx="2"/>
+<circle cx="179" cy="72" r="5" fill="#FAC775"/>
+<circle cx="234" cy="82" r="9" fill="#888780"/>
+<circle cx="230" cy="79" r="3" fill="#2C1A00"/>
+<path d="M276 88 Q284 78 296 82 Q290 92 280 90 Z" fill="white"/>
+<line x1="283" y1="90" x2="282" y2="100" stroke="white" stroke-width="2.5"/>`,
+
+betlem:`
+<rect width="360" height="240" fill="#26215C"/>
+<circle cx="38" cy="22" r="1.5" fill="white"/><circle cx="68" cy="38" r="1" fill="white" opacity=".8"/><circle cx="118" cy="14" r="2" fill="white"/><circle cx="152" cy="44" r="1.5" fill="white" opacity=".8"/><circle cx="198" cy="10" r="1.5" fill="white"/><circle cx="244" cy="32" r="1" fill="white" opacity=".8"/><circle cx="282" cy="18" r="2" fill="white"/><circle cx="320" cy="42" r="1.5" fill="white" opacity=".8"/><circle cx="350" cy="20" r="1" fill="white"/><circle cx="80" cy="62" r="1" fill="white" opacity=".6"/><circle cx="164" cy="56" r="1" fill="white" opacity=".6"/><circle cx="294" cy="58" r="1" fill="white" opacity=".6"/>
+<circle cx="180" cy="22" r="36" fill="#EF9F27" opacity=".2"/>
+<circle cx="180" cy="22" r="24" fill="#EF9F27" opacity=".4"/>
+<circle cx="180" cy="22" r="14" fill="#EF9F27" opacity=".9"/>
+<line x1="180" y1="0" x2="180" y2="60" stroke="#EF9F27" stroke-width="3" opacity=".6"/>
+<line x1="148" y1="22" x2="212" y2="22" stroke="#EF9F27" stroke-width="3" opacity=".6"/>
+<polygon points="60,240 120,130 180,240" fill="#412402"/>
+<polygon points="180,240 240,130 300,240" fill="#633806"/>
+<rect y="195" width="360" height="45" fill="#C7A882"/>
+<rect x="110" y="138" width="140" height="58" fill="#854F0B" rx="3"/>
+<rect x="120" y="130" width="120" height="14" fill="#C7A882" rx="3"/>
+<ellipse cx="180" cy="190" rx="30" ry="12" fill="#FAC775"/>
+<ellipse cx="180" cy="185" rx="22" ry="9" fill="#EF9F27"/>
+<ellipse cx="180" cy="179" rx="16" ry="7" fill="#FAC775"/>
+<circle cx="180" cy="173" r="10" fill="#FAC775"/>
+<ellipse cx="180" cy="169" rx="8" ry="5" fill="#F5C4B3"/>
+<circle cx="177" cy="167" r="1.5" fill="#2C1A00"/>
+<circle cx="183" cy="167" r="1.5" fill="#2C1A00"/>
+<circle cx="118" cy="158" r="12" fill="#FAC775"/>
+<rect x="108" y="170" width="20" height="30" fill="#FBEAF0" rx="5"/>
+<path d="M108 180 L96 198" stroke="#FAC775" stroke-width="5" stroke-linecap="round"/>
+<circle cx="248" cy="155" r="12" fill="#FAC775"/>
+<rect x="238" y="167" width="20" height="30" fill="#854F0B" rx="5"/>
+<path d="M258 177 L270 192" stroke="#FAC775" stroke-width="5" stroke-linecap="round"/>
+<ellipse cx="50" cy="150" rx="16" ry="12" fill="white" opacity=".9"/>
+<ellipse cx="40" cy="145" rx="11" ry="8" fill="white" opacity=".9"/>
+<ellipse cx="310" cy="155" rx="16" ry="12" fill="white" opacity=".9"/>
+<path d="M42 156 Q40 148 46 152" stroke="white" stroke-width="2" fill="none"/>
+<path d="M306 162 Q310 155 314 158" stroke="white" stroke-width="2" fill="none"/>`,
+
+ovce:`
+<rect width="360" height="240" fill="#C8DFFE"/>
+<ellipse cx="60" cy="50" rx="36" ry="20" fill="white" opacity=".9"/>
+<circle cx="46" cy="47" r="16" fill="white" opacity=".9"/>
+<circle cx="72" cy="42" r="14" fill="white" opacity=".9"/>
+<ellipse cx="300" cy="45" rx="34" ry="18" fill="white" opacity=".85"/>
+<circle cx="286" cy="42" r="15" fill="white" opacity=".85"/>
+<ellipse cx="180" cy="180" rx="210" ry="80" fill="#97C459"/>
+<ellipse cx="180" cy="165" rx="190" ry="66" fill="#639922"/>
+<ellipse cx="60" cy="165" rx="60" ry="36" fill="#97C459"/>
+<ellipse cx="300" cy="170" rx="60" ry="36" fill="#97C459"/>
+<ellipse cx="100" cy="152" rx="22" ry="18" fill="white"/>
+<ellipse cx="82" cy="146" rx="14" ry="12" fill="white"/>
+<ellipse cx="118" cy="146" rx="14" ry="12" fill="white"/>
+<ellipse cx="100" cy="138" rx="16" ry="14" fill="white"/>
+<circle cx="100" cy="128" r="11" fill="#F5E6D8"/>
+<circle cx="96" cy="126" r="3" fill="#2C1A00"/>
+<circle cx="104" cy="126" r="3" fill="#2C1A00"/>
+<rect x="94" y="163" width="5" height="12" fill="#F5E6D8" rx="2"/>
+<rect x="106" y="163" width="5" height="12" fill="#F5E6D8" rx="2"/>
+<ellipse cx="240" cy="148" rx="22" ry="18" fill="white"/>
+<ellipse cx="222" cy="142" rx="14" ry="12" fill="white"/>
+<ellipse cx="258" cy="142" rx="14" ry="12" fill="white"/>
+<ellipse cx="240" cy="134" rx="16" ry="14" fill="white"/>
+<circle cx="240" cy="124" r="11" fill="#F5E6D8"/>
+<circle cx="236" cy="122" r="3" fill="#2C1A00"/>
+<circle cx="244" cy="122" r="3" fill="#2C1A00"/>
+<rect x="234" y="159" width="5" height="12" fill="#F5E6D8" rx="2"/>
+<rect x="246" y="159" width="5" height="12" fill="#F5E6D8" rx="2"/>
+<ellipse cx="168" cy="150" rx="20" ry="16" fill="white"/>
+<ellipse cx="152" cy="144" rx="12" ry="11" fill="white"/>
+<ellipse cx="184" cy="144" rx="12" ry="11" fill="white"/>
+<ellipse cx="168" cy="138" rx="14" ry="12" fill="white"/>
+<circle cx="168" cy="128" r="10" fill="#F5E6D8"/>
+<rect x="162" y="160" width="5" height="11" fill="#F5E6D8" rx="2"/>
+<rect x="172" y="160" width="5" height="11" fill="#F5E6D8" rx="2"/>
+<circle cx="180" cy="80" r="18" fill="#FAC775"/>
+<rect x="164" y="98" width="32" height="48" fill="white" rx="8"/>
+<path d="M164 118 L144 130" stroke="#FAC775" stroke-width="8" stroke-linecap="round"/>
+<path d="M196 118 L210 110" stroke="#FAC775" stroke-width="8" stroke-linecap="round"/>
+<path d="M174 145 L170 175" stroke="#FAC775" stroke-width="7" stroke-linecap="round"/>
+<path d="M188 145 L192 175" stroke="#FAC775" stroke-width="7" stroke-linecap="round"/>
+<rect x="206" y="106" width="5" height="62" fill="#854F0B" rx="2"/>
+<path d="M211 106 Q224 96 220 114 Q212 110 211 106Z" fill="#854F0B"/>
+<path d="M174 72 Q180 66 186 72" fill="none" stroke="#2C1A00" stroke-width="2"/>`,
+
+david:`
+<rect width="360" height="150" fill="#87BDEE"/>
+<ellipse cx="70" cy="44" rx="36" ry="18" fill="white" opacity=".8"/>
+<circle cx="58" cy="42" r="15" fill="white" opacity=".8"/>
+<ellipse cx="296" cy="50" rx="32" ry="16" fill="white" opacity=".75"/>
+<circle cx="66" cy="40" r="12" fill="white" opacity=".8"/>
+<rect y="150" width="360" height="90" fill="#C7A882"/>
+<rect y="178" width="360" height="62" fill="#D3B898"/>
+<circle cx="80" cy="115" r="16" fill="#FAC775"/>
+<rect x="66" y="131" width="28" height="48" fill="#378ADD" rx="6"/>
+<path d="M66 148 L46 168" stroke="#FAC775" stroke-width="7" stroke-linecap="round"/>
+<path d="M94 148 L104 138" stroke="#FAC775" stroke-width="7" stroke-linecap="round"/>
+<path d="M104 138 Q118 126 112 112" fill="none" stroke="#FAC775" stroke-width="6" stroke-linecap="round"/>
+<path d="M66 170 L60 210" stroke="#FAC775" stroke-width="7" stroke-linecap="round"/>
+<path d="M92 172 L98 210" stroke="#FAC775" stroke-width="7" stroke-linecap="round"/>
+<path d="M74 107 Q80 101 86 107" fill="none" stroke="#2C1A00" stroke-width="2"/>
+<circle cx="76" cy="104" r="3" fill="#2C1A00"/>
+<circle cx="84" cy="104" r="3" fill="#2C1A00"/>
+<circle cx="280" cy="80" r="24" fill="#FAC775"/>
+<rect x="256" y="104" width="48" height="96" fill="#888780" rx="6"/>
+<ellipse cx="243" cy="140" rx="20" ry="28" fill="#5F5E5A"/>
+<ellipse cx="243" cy="140" rx="12" ry="22" fill="#888780"/>
+<rect x="312" y="58" width="7" height="130" fill="#633806" rx="3"/>
+<polygon points="312,58 319,58 315.5,38" fill="#5F5E5A"/>
+<rect x="260" y="192" width="16" height="28" fill="#5F5E5A" rx="4"/>
+<rect x="280" y="192" width="16" height="28" fill="#5F5E5A" rx="4"/>
+<path d="M268 102 Q280 94 292 102" fill="none" stroke="#2C1A00" stroke-width="2.5"/>
+<circle cx="272" cy="78" r="3.5" fill="#2C1A00"/>
+<circle cx="288" cy="78" r="3.5" fill="#2C1A00"/>
+<ellipse cx="82" cy="148" rx="20" ry="4" fill="#C7A882"/>
+<ellipse cx="86" cy="146" rx="5" ry="3" fill="#888780"/>`,
+
+jonas:`
+<rect width="360" height="240" fill="#0C447C"/>
+<path d="M0 80 Q45 68 90 80 Q135 92 180 80 Q225 68 270 80 Q315 92 360 80" fill="#1D6AAD"/>
+<path d="M0 104 Q60 94 120 104 Q180 114 240 104 Q300 94 360 104" fill="#0C447C"/>
+<path d="M0 128 Q45 118 90 128 Q135 138 180 128 Q225 118 270 128 Q315 138 360 128" fill="#1D9E75" opacity=".5"/>
+<circle cx="38" cy="28" r="2" fill="white" opacity=".8"/><circle cx="88" cy="42" r="1.5" fill="white" opacity=".8"/><circle cx="148" cy="18" r="2.5" fill="white"/><circle cx="228" cy="14" r="2" fill="white" opacity=".9"/><circle cx="298" cy="24" r="2" fill="white"/><circle cx="342" cy="38" r="1.5" fill="white" opacity=".8"/>
+<circle cx="280" cy="52" r="26" fill="#FAC775" opacity=".3"/>
+<circle cx="280" cy="52" r="18" fill="#FAC775" opacity=".6"/>
+<circle cx="280" cy="52" r="12" fill="#EF9F27"/>
+<line x1="280" y1="20" x2="280" y2="84" stroke="#FAC775" stroke-width="2.5" opacity=".5"/>
+<line x1="248" y1="52" x2="312" y2="52" stroke="#FAC775" stroke-width="2.5" opacity=".5"/>
+<path d="M30 160 Q20 128 50 116 Q120 88 180 92 Q240 96 290 128 Q330 152 310 180 Q260 200 180 196 Q80 196 30 160Z" fill="#378ADD"/>
+<path d="M294 156 L336 136 L348 178 Z" fill="#378ADD"/>
+<circle cx="72" cy="132" r="7" fill="white"/>
+<circle cx="70" cy="130" r="4" fill="#1D6AAD"/>
+<circle cx="72" cy="135" r="2" fill="#EF9F27"/>
+<path d="M38 168 Q50 180 60 196" fill="none" stroke="#1D9E75" stroke-width="4" stroke-linecap="round"/>
+<path d="M290 150 Q302 160 304 180" fill="none" stroke="#1D9E75" stroke-width="4" stroke-linecap="round"/>
+<path d="M76 155 Q100 160 120 150" stroke="#1D6AAD" stroke-width="2" fill="none" stroke-linecap="round"/>
+<ellipse cx="140" cy="150" rx="28" ry="20" fill="#FAC775" opacity=".5"/>
+<circle cx="140" cy="138" r="13" fill="#FAC775" opacity=".7"/>
+<rect x="130" y="150" width="22" height="30" fill="#3C3489" rx="5" opacity=".7"/>
+<path d="M133 146 Q140 141 147 146" fill="none" stroke="#2C1A00" stroke-width="1.5" opacity=".7"/>`,
+
+stvoreni:`
+<rect width="360" height="240" fill="#26215C"/>
+<circle cx="180" cy="120" r="180" fill="#C8DFFE" opacity=".08"/>
+<circle cx="180" cy="120" r="130" fill="#C8DFFE" opacity=".1"/>
+<rect x="0" y="0" width="180" height="240" fill="#26215C"/>
+<rect x="180" y="0" width="180" height="240" fill="#C8DFFE"/>
+<circle cx="52" cy="28" r="2" fill="white"/><circle cx="98" cy="44" r="1.5" fill="white" opacity=".8"/><circle cx="32" cy="58" r="1" fill="white" opacity=".7"/><circle cx="140" cy="20" r="1.5" fill="white"/><circle cx="112" cy="62" r="1" fill="white" opacity=".6"/>
+<circle cx="56" cy="60" r="20" fill="#EEEDFE" opacity=".9"/>
+<circle cx="66" cy="54" r="18" fill="#26215C"/>
+<circle cx="62" cy="52" r="3" fill="white" opacity=".8"/>
+<circle cx="54" cy="64" r="2" fill="white" opacity=".7"/>
+<line x1="180" y1="0" x2="180" y2="240" stroke="rgba(255,255,255,.25)" stroke-width="2" stroke-dasharray="6,4"/>
+<circle cx="290" cy="52" r="34" fill="#EF9F27" opacity=".3"/>
+<circle cx="290" cy="52" r="24" fill="#EF9F27" opacity=".6"/>
+<circle cx="290" cy="52" r="16" fill="#FAC775"/>
+<line x1="290" y1="16" x2="290" y2="24" stroke="#FAC775" stroke-width="3"/><line x1="290" y1="80" x2="290" y2="88" stroke="#FAC775" stroke-width="3"/>
+<line x1="254" y1="52" x2="246" y2="52" stroke="#FAC775" stroke-width="3"/><line x1="326" y1="52" x2="334" y2="52" stroke="#FAC775" stroke-width="3"/>
+<line x1="266" y1="28" x2="260" y2="22" stroke="#FAC775" stroke-width="2.5"/><line x1="314" y1="76" x2="320" y2="82" stroke="#FAC775" stroke-width="2.5"/>
+<line x1="266" y1="76" x2="260" y2="82" stroke="#FAC775" stroke-width="2.5"/><line x1="314" y1="28" x2="320" y2="22" stroke="#FAC775" stroke-width="2.5"/>
+<rect x="190" y="178" width="160" height="62" fill="#378ADD"/>
+<ellipse cx="270" cy="175" rx="110" ry="48" fill="#639922"/>
+<ellipse cx="198" cy="178" rx="44" ry="32" fill="#639922"/>
+<ellipse cx="342" cy="180" rx="40" ry="30" fill="#639922"/>
+<ellipse cx="270" cy="160" rx="84" ry="34" fill="#97C459"/>
+<rect x="238" y="126" width="8" height="40" fill="#633806" rx="3"/>
+<ellipse cx="242" cy="122" rx="20" ry="15" fill="#3B6D11"/>
+<ellipse cx="232" cy="118" rx="14" ry="11" fill="#639922"/>
+<ellipse cx="252" cy="116" rx="14" ry="11" fill="#639922"/>
+<rect x="310" y="132" width="7" height="36" fill="#633806" rx="3"/>
+<ellipse cx="313" cy="129" rx="18" ry="13" fill="#3B6D11"/>
+<ellipse cx="303" cy="126" rx="12" ry="10" fill="#639922"/>
+<ellipse cx="40" cy="178" rx="30" ry="18" fill="#26215C" opacity=".6"/>
+<rect x="18" y="196" width="56" height="50" fill="#412402" opacity=".4" rx="3"/>
+<ellipse cx="106" cy="180" rx="28" ry="18" fill="#26215C" opacity=".5"/>
+<rect x="85" y="198" width="50" height="48" fill="#412402" opacity=".35" rx="3"/>
+<ellipse cx="270" cy="136" rx="16" ry="10" fill="white" opacity=".9"/>
+<circle cx="258" cy="134" r="10" fill="white" opacity=".9"/>
+<ellipse cx="328" cy="128" rx="16" ry="10" fill="white" opacity=".8"/>`,
+
+daniel:`
+<rect width="360" height="240" fill="#1A1830"/>
+<circle cx="52" cy="28" r="1.5" fill="white"/><circle cx="88" cy="44" r="1" fill="white" opacity=".8"/><circle cx="144" cy="20" r="2" fill="white"/><circle cx="216" cy="38" r="1.5" fill="white" opacity=".8"/><circle cx="296" cy="18" r="2" fill="white"/><circle cx="340" cy="36" r="1" fill="white" opacity=".8"/>
+<circle cx="54" cy="28" r="20" fill="#EEEDFE" opacity=".25"/>
+<circle cx="64" cy="22" r="18" fill="#1A1830"/>
+<rect y="160" width="360" height="80" fill="#412402"/>
+<path d="M0 162 Q45 152 90 162 Q135 172 180 162 Q225 152 270 162 Q315 172 360 162" fill="#633806"/>
+<ellipse cx="80" cy="158" rx="32" ry="22" fill="#5F5E5A"/>
+<path d="M46 154 Q46 130 80 128 Q114 130 114 154" fill="#5F5E5A"/>
+<circle cx="64" cy="142" r="5" fill="#2C1A00"/>
+<circle cx="80" cy="144" r="5" fill="#2C1A00"/>
+<path d="M60 152 Q80 160 100 152" fill="none" stroke="#2C1A00" stroke-width="2.5"/>
+<ellipse cx="280" cy="154" rx="32" ry="22" fill="#5F5E5A"/>
+<path d="M246 150 Q246 126 280 124 Q314 126 314 150" fill="#5F5E5A"/>
+<circle cx="264" cy="138" r="5" fill="#2C1A00"/>
+<circle cx="280" cy="140" r="5" fill="#2C1A00"/>
+<path d="M260 148 Q280 156 300 148" fill="none" stroke="#2C1A00" stroke-width="2.5"/>
+<circle cx="180" cy="106" r="18" fill="#FAC775"/>
+<rect x="164" y="124" width="32" height="48" fill="#3C3489" rx="7"/>
+<path d="M164 144 L144 156" stroke="#FAC775" stroke-width="7" stroke-linecap="round"/>
+<path d="M196 144 L216 156" stroke="#FAC775" stroke-width="7" stroke-linecap="round"/>
+<path d="M174 170 L170 200" stroke="#FAC775" stroke-width="6" stroke-linecap="round"/>
+<path d="M188 170 L192 200" stroke="#FAC775" stroke-width="6" stroke-linecap="round"/>
+<path d="M174 98 Q180 92 186 98" fill="none" stroke="#2C1A00" stroke-width="2"/>
+<circle cx="176" cy="95" r="2.5" fill="#2C1A00"/>
+<circle cx="184" cy="95" r="2.5" fill="#2C1A00"/>
+<ellipse cx="180" cy="80" rx="32" ry="18" fill="#CECBF6" opacity=".5"/>
+<path d="M168 80 Q180 72 192 80" fill="none" stroke="#EEEDFE" stroke-width="2" opacity=".8"/>
+<path d="M144 156 Q128 165 115 170" stroke="#5F5E5A" stroke-width="3" fill="none" stroke-linecap="round"/>
+<path d="M216 156 Q232 165 245 170" stroke="#5F5E5A" stroke-width="3" fill="none" stroke-linecap="round"/>`,
+
+more:`
+<rect width="360" height="240" fill="#1D4E6A"/>
+<circle cx="52" cy="20" r="1.5" fill="white" opacity=".7"/><circle cx="108" cy="36" r="1" fill="white" opacity=".6"/><circle cx="298" cy="14" r="2" fill="white" opacity=".8"/><circle cx="340" cy="30" r="1.5" fill="white" opacity=".7"/>
+<ellipse cx="60" cy="42" rx="40" ry="22" fill="#5F5E5A" opacity=".5"/><ellipse cx="48" cy="38" rx="28" ry="16" fill="#5F5E5A" opacity=".5"/>
+<ellipse cx="290" cy="36" rx="40" ry="20" fill="#5F5E5A" opacity=".5"/><ellipse cx="302" cy="32" rx="28" ry="15" fill="#5F5E5A" opacity=".5"/>
+<rect y="100" width="360" height="140" fill="#1D6AAD"/>
+<path d="M0 108 Q45 98 90 108 Q135 118 180 108 Q225 98 270 108 Q315 118 360 108" fill="#378ADD"/>
+<path d="M0 130 Q60 120 120 130 Q180 140 240 130 Q300 120 360 130" fill="#1D6AAD"/>
+<path d="M0 152 Q45 142 90 152 Q135 162 180 152 Q225 142 270 152 Q315 162 360 152" fill="#1D9E75" opacity=".4"/>
+<rect x="72" y="68" width="136" height="38" fill="#854F0B" rx="6"/>
+<polygon points="72,68 140,38 208,68" fill="#633806"/>
+<rect x="138" y="38" width="5" height="38" fill="#412402" rx="2"/>
+<path d="M143 38 Q164 26 160 48 Q150 44 143 38Z" fill="#EF9F27"/>
+<circle cx="88" cy="80" r="9" fill="#FAC775"/>
+<circle cx="114" cy="78" r="9" fill="#FAC775"/>
+<circle cx="140" cy="78" r="9" fill="#FAC775"/>
+<circle cx="166" cy="80" r="9" fill="#FAC775"/>
+<rect x="80" y="89" width="16" height="18" fill="#854F0B" rx="3"/>
+<rect x="106" y="89" width="16" height="18" fill="#854F0B" rx="3"/>
+<rect x="132" y="89" width="16" height="18" fill="#854F0B" rx="3"/>
+<rect x="158" y="89" width="16" height="18" fill="#854F0B" rx="3"/>
+<circle cx="300" cy="84" r="18" fill="#EEEDFE" opacity=".92"/>
+<rect x="284" y="102" width="32" height="48" fill="#CECBF6" rx="8"/>
+<path d="M284 122 L262 135" stroke="#EEEDFE" stroke-width="8" stroke-linecap="round"/>
+<path d="M316 122 L330 122" stroke="#EEEDFE" stroke-width="8" stroke-linecap="round"/>
+<path d="M294 148 L290 180" stroke="#EEEDFE" stroke-width="7" stroke-linecap="round"/>
+<path d="M308 148 L312 180" stroke="#EEEDFE" stroke-width="7" stroke-linecap="round"/>
+<path d="M262 135 Q254 144 256 154" stroke="#EEEDFE" stroke-width="6" fill="none" stroke-linecap="round"/>
+<ellipse cx="256" cy="158" rx="20" ry="7" fill="#378ADD" opacity=".6"/>
+<path d="M294 76 Q300 70 306 76" fill="none" stroke="#412402" stroke-width="2"/>`,
+
+mojzis:`
+<rect width="360" height="240" fill="#FAEEDA"/>
+<circle cx="310" cy="36" r="38" fill="#EF9F27" opacity=".5"/>
+<circle cx="310" cy="36" r="26" fill="#FAC775" opacity=".7"/>
+<circle cx="310" cy="36" r="16" fill="#EF9F27"/>
+<line x1="310" y1="4" x2="310" y2="12" stroke="#FAC775" stroke-width="3"/>
+<line x1="310" y1="60" x2="310" y2="68" stroke="#FAC775" stroke-width="3"/>
+<line x1="278" y1="36" x2="270" y2="36" stroke="#FAC775" stroke-width="3"/>
+<line x1="342" y1="36" x2="350" y2="36" stroke="#FAC775" stroke-width="3"/>
+<line x1="286" y1="12" x2="280" y2="6" stroke="#FAC775" stroke-width="2.5"/>
+<line x1="334" y1="60" x2="340" y2="66" stroke="#FAC775" stroke-width="2.5"/>
+<polygon points="180,24 60,165 300,165" fill="#C7A882"/>
+<polygon points="180,24 80,165 280,165" fill="#D3C5A8"/>
+<rect y="165" width="360" height="75" fill="#C7A882"/>
+<rect y="195" width="360" height="45" fill="#D3B898"/>
+<rect x="138" y="90" width="20" height="80" fill="#412402" rx="5"/>
+<rect x="172" y="90" width="20" height="80" fill="#412402" rx="5"/>
+<ellipse cx="155" cy="86" rx="50" ry="36" fill="#EF9F27" opacity=".8"/>
+<ellipse cx="140" cy="74" rx="38" ry="28" fill="#E24B4A" opacity=".7"/>
+<ellipse cx="168" cy="70" rx="38" ry="28" fill="#EF9F27" opacity=".8"/>
+<ellipse cx="155" cy="60" rx="30" ry="22" fill="#FAC775" opacity=".9"/>
+<ellipse cx="134" cy="68" rx="22" ry="18" fill="#E24B4A" opacity=".6"/>
+<ellipse cx="176" cy="64" rx="20" ry="16" fill="#EF9F27" opacity=".9"/>
+<ellipse cx="155" cy="50" rx="20" ry="16" fill="#FAC775"/>
+<path d="M144 46 Q152 34 158 46 Q162 36 166 46" stroke="#EF9F27" stroke-width="3" fill="none" stroke-linecap="round"/>
+<circle cx="82" cy="148" r="16" fill="#FAC775"/>
+<rect x="68" y="164" width="28" height="48" fill="#854F0B" rx="7"/>
+<path d="M68 182 L50 196" stroke="#FAC775" stroke-width="7" stroke-linecap="round"/>
+<path d="M96 182 L107 175" stroke="#FAC775" stroke-width="7" stroke-linecap="round"/>
+<path d="M107 175 Q120 164 115 150" fill="none" stroke="#FAC775" stroke-width="6" stroke-linecap="round"/>
+<path d="M68 195 L62 225" stroke="#FAC775" stroke-width="6" stroke-linecap="round"/>
+<path d="M94 196 L100 225" stroke="#FAC775" stroke-width="6" stroke-linecap="round"/>
+<path d="M76 140 Q82 134 88 140" fill="none" stroke="#2C1A00" stroke-width="2"/>
+<path d="M62 212 Q68 204 76 208" fill="none" stroke="#412402" stroke-width="2" stroke-linecap="round"/>
+<path d="M96 208 Q104 204 110 212" fill="none" stroke="#412402" stroke-width="2" stroke-linecap="round"/>`,
+
+deti:`
+<rect width="360" height="240" fill="#E6F1FB"/>
+<circle cx="298" cy="36" r="34" fill="#FAC775" opacity=".5"/>
+<circle cx="298" cy="36" r="22" fill="#EF9F27" opacity=".7"/>
+<line x1="298" y1="6" x2="298" y2="14" stroke="#FAC775" stroke-width="3"/>
+<line x1="298" y1="58" x2="298" y2="66" stroke="#FAC775" stroke-width="3"/>
+<line x1="268" y1="36" x2="260" y2="36" stroke="#FAC775" stroke-width="3"/>
+<line x1="328" y1="36" x2="336" y2="36" stroke="#FAC775" stroke-width="3"/>
+<ellipse cx="56" cy="52" rx="36" ry="20" fill="white" opacity=".85"/>
+<circle cx="44" cy="50" r="16" fill="white" opacity=".85"/>
+<rect y="185" width="360" height="55" fill="#C7A882"/>
+<ellipse cx="180" cy="178" rx="210" ry="70" fill="#97C459"/>
+<ellipse cx="180" cy="164" rx="180" ry="56" fill="#C0DD97"/>
+<rect x="60" y="108" width="18" height="80" fill="#854F0B" rx="5"/>
+<ellipse cx="69" cy="96" rx="46" ry="36" fill="#3B6D11"/>
+<ellipse cx="50" cy="88" rx="32" ry="26" fill="#639922"/>
+<ellipse cx="88" cy="84" rx="32" ry="26" fill="#639922"/>
+<ellipse cx="69" cy="74" rx="30" ry="22" fill="#97C459"/>
+<rect x="290" y="114" width="16" height="80" fill="#854F0B" rx="5"/>
+<ellipse cx="298" cy="104" rx="40" ry="30" fill="#3B6D11"/>
+<ellipse cx="282" cy="98" rx="26" ry="22" fill="#639922"/>
+<ellipse cx="314" cy="95" rx="26" ry="22" fill="#639922"/>
+<ellipse cx="298" cy="86" rx="24" ry="18" fill="#97C459"/>
+<circle cx="180" cy="100" r="20" fill="#FAC775"/>
+<rect x="162" y="120" width="36" height="52" fill="white" rx="9"/>
+<path d="M162 140 L136 150" stroke="#FAC775" stroke-width="9" stroke-linecap="round"/>
+<path d="M198 140 L222 150" stroke="#FAC775" stroke-width="9" stroke-linecap="round"/>
+<path d="M170 170 L166 200" stroke="#FAC775" stroke-width="8" stroke-linecap="round"/>
+<path d="M192 170 L196 200" stroke="#FAC775" stroke-width="8" stroke-linecap="round"/>
+<path d="M174 92 Q180 86 186 92" fill="none" stroke="#2C1A00" stroke-width="2.5"/>
+<circle cx="176" cy="89" r="3" fill="#2C1A00"/>
+<circle cx="184" cy="89" r="3" fill="#2C1A00"/>
+<circle cx="112" cy="142" r="13" fill="#FAC775"/><rect x="102" y="155" width="20" height="35" fill="#E24B4A" rx="5"/>
+<path d="M102 168 L88 182" stroke="#FAC775" stroke-width="6" stroke-linecap="round"/>
+<path d="M122 168 L132 162" stroke="#FAC775" stroke-width="6" stroke-linecap="round"/>
+<circle cx="136" cy="150" r="11" fill="#FAC775"/><rect x="128" y="161" width="16" height="30" fill="#854F0B" rx="4"/>
+<path d="M128 172 L116 183" stroke="#FAC775" stroke-width="5" stroke-linecap="round"/>
+<circle cx="230" cy="145" r="13" fill="#FAC775"/><rect x="220" y="158" width="20" height="35" fill="#378ADD" rx="5"/>
+<path d="M240 170 L252 184" stroke="#FAC775" stroke-width="6" stroke-linecap="round"/>
+<circle cx="246" cy="150" r="11" fill="#FAC775"/><rect x="238" y="161" width="16" height="30" fill="#D85A30" rx="4"/>
+<path d="M254 170 L262 162" stroke="#FAC775" stroke-width="5" stroke-linecap="round"/>
+<path d="M136 148 Q160 138 162 134" stroke="#FAC775" stroke-width="4" fill="none" stroke-linecap="round"/>
+<path d="M198 138 Q210 132 220 144" stroke="#FAC775" stroke-width="4" fill="none" stroke-linecap="round"/>`,
+
+};
+
+// ═══════════════════════════════════════════════
+// DEFINICE PUZZLÍ
+// ═══════════════════════════════════════════════
+const PUZZLES = [
+  {id:'archa',    name:'Noe a archa',         emoji:'🌊', bg:'#C8DFFE'},
+  {id:'betlem',   name:'Betlém',              emoji:'⭐', bg:'#26215C'},
+  {id:'ovce',     name:'Ježíš a ovečky',      emoji:'🐑', bg:'#C8DFFE'},
+  {id:'david',    name:'David a Goliáš',      emoji:'🪨', bg:'#87BDEE'},
+  {id:'jonas',    name:'Jonáš a velryba',     emoji:'🐟', bg:'#0C447C'},
+  {id:'stvoreni', name:'Stvoření světa',      emoji:'🌍', bg:'#26215C'},
+  {id:'daniel',   name:'Daniel ve lví jámě',  emoji:'🦁', bg:'#1A1830'},
+  {id:'more',     name:'Ježíš na moři',       emoji:'⛵', bg:'#1D4E6A'},
+  {id:'mojzis',   name:'Mojžíš a hořící keř', emoji:'🔥', bg:'#FAEEDA'},
+  {id:'deti',     name:'Ježíš s dětmi',       emoji:'👧', bg:'#E6F1FB'},
+];
+
+// 2 sloupce × 3 řady = 6 dílků
+// Každý dílek: 180×80 v SVG prostoru (viewBox 0 0 360 240 → 360/2=180, 240/3=80)
+const COLS = 2, ROWS = 3;
+const PW = 360 / COLS;   // = 180
+const PH = 240 / ROWS;   // = 80
+
+// ═══════════════════════════════════════════════
+// STAV HRY
+// ═══════════════════════════════════════════════
+let currentPuzzle = null;
+let shuffledPieces = []; // [{col, row, id}] shuffled order
+let placed = {};         // key "col-row" → true
+let selected = null;     // id "col-row" of selected tray piece
+
+// ═══════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════
+function initSelect() {
+  const grid = document.getElementById('puzzles-grid');
+  grid.innerHTML = PUZZLES.map(p => `
+    <button class="pcard" onclick="startPuzzle('${p.id}')">
+      <svg viewBox="0 0 360 240" xmlns="http://www.w3.org/2000/svg">
+        <rect width="360" height="240" fill="${p.bg}"/>
+        ${SCENES[p.id]}
+      </svg>
+      <div class="pcard-name">${p.emoji} ${p.name}</div>
+    </button>
+  `).join('');
+}
+
+// ═══════════════════════════════════════════════
+// VIEWS
+// ═══════════════════════════════════════════════
+function showSelect() {
+  document.getElementById('select-view').style.display = 'block';
+  document.getElementById('game-view').style.display = 'none';
+  document.getElementById('win-overlay').classList.remove('show');
+  window.scrollTo(0, 0);
+}
+function showGame() {
+  document.getElementById('select-view').style.display = 'none';
+  document.getElementById('game-view').style.display = 'flex';
+  window.scrollTo(0, 0);
+}
+
+// ═══════════════════════════════════════════════
+// SPUŠTĚNÍ
+// ═══════════════════════════════════════════════
+function startPuzzle(id) {
+  currentPuzzle = PUZZLES.find(p => p.id === id);
+  placed = {};
+  selected = null;
+
+  // Vytvoř 6 dílků a zamíchej je
+  let all = [];
+  for (let r = 0; r < ROWS; r++)
+    for (let c = 0; c < COLS; c++)
+      all.push({col: c, row: r, id: `${c}-${r}`});
+  for (let i = all.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [all[i], all[j]] = [all[j], all[i]];
+  }
+  shuffledPieces = all;
+
+  document.getElementById('game-title').textContent = currentPuzzle.name;
+  document.getElementById('prog').textContent = '0';
+
+  // Referenční obrázek
+  document.getElementById('ref-svg').innerHTML =
+    `<rect width="360" height="240" fill="${currentPuzzle.bg}"/>${SCENES[currentPuzzle.id]}`;
+
+  renderBoard();
+  renderTray();
+  showGame();
+}
+
+function replayPuzzle() { startPuzzle(currentPuzzle.id); }
+
+// ═══════════════════════════════════════════════
+// RENDEROVÁNÍ
+// ═══════════════════════════════════════════════
+function pieceSVG(p) {
+  const vx = p.col * PW, vy = p.row * PH;
+  return `<svg viewBox="${vx} ${vy} ${PW} ${PH}" xmlns="http://www.w3.org/2000/svg">
+    <rect width="360" height="240" fill="${currentPuzzle.bg}"/>
+    ${SCENES[currentPuzzle.id]}
+  </svg>`;
+}
+
+function renderBoard() {
+  const board = document.getElementById('board');
+  let html = '';
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      const key = `${c}-${r}`;
+      if (placed[key]) {
+        const p = {col: c, row: r};
+        html += `<div class="slot filled" id="slot-${key}">${pieceSVG(p)}</div>`;
+      } else {
+        html += `<div class="slot" id="slot-${key}" onclick="tryPlace('${key}')"></div>`;
+      }
+    }
+  }
+  board.innerHTML = html;
+}
+
+function renderTray() {
+  const tray = document.getElementById('tray');
+  const remaining = shuffledPieces.filter(p => !placed[p.id]);
+  if (remaining.length === 0) { tray.innerHTML = ''; return; }
+  tray.innerHTML = remaining.map(p => `
+    <div class="piece${selected === p.id ? ' selected' : ''}" id="piece-${p.id}" onclick="selectPiece('${p.id}')">
+      ${pieceSVG(p)}
+    </div>
+  `).join('');
+}
+
+// ═══════════════════════════════════════════════
+// LOGIKA HRY
+// ═══════════════════════════════════════════════
+function selectPiece(id) {
+  if (selected === id) { selected = null; }
+  else { selected = id; }
+  renderTray();
+}
+
+function tryPlace(slotKey) {
+  if (!selected) {
+    // Blikni slot – připomeň dítěti, aby si nejdřív vybralo dílek
+    const slotEl = document.getElementById('slot-' + slotKey);
+    if (slotEl) { slotEl.style.borderColor = '#EF9F27'; setTimeout(() => { slotEl.style.borderColor = ''; }, 500); }
+    return;
+  }
+  // Správná pozice?
+  if (selected === slotKey) {
+    // SPRÁVNĚ
+    placed[slotKey] = true;
+    selected = null;
+    const count = Object.keys(placed).length;
+    document.getElementById('prog').textContent = count;
+    renderBoard();
+    renderTray();
+    // Flash správného slotu
+    setTimeout(() => {
+      const sl = document.getElementById('slot-' + slotKey);
+      if (sl) { sl.classList.add('correct-flash'); setTimeout(() => sl.classList.remove('correct-flash'), 400); }
+    }, 30);
+    if (count === ROWS * COLS) setTimeout(showWin, 600);
+  } else {
+    // ŠPATNĚ
+    const slotEl = document.getElementById('slot-' + slotKey);
+    const pieceEl = document.getElementById('piece-' + selected);
+    if (slotEl) { slotEl.classList.add('wrong-flash'); setTimeout(() => slotEl.classList.remove('wrong-flash'), 400); }
+    if (pieceEl) { pieceEl.style.transform = 'none'; }
+    selected = null;
+    renderTray();
+  }
+}
+
+// ═══════════════════════════════════════════════
+// VÝHRA
+// ═══════════════════════════════════════════════
+function showWin() {
+  document.getElementById('win-overlay').classList.add('show');
+  startConfetti();
+}
+
+// ═══════════════════════════════════════════════
+// KONFETY
+// ═══════════════════════════════════════════════
+function startConfetti() {
+  const canvas = document.getElementById('confetti-canvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  const colors = ['#EF9F27','#E24B4A','#639922','#378ADD','#993556','#FAC775','#3C3489','#1D9E75'];
+  const pieces = Array.from({length:80}, () => ({
+    x: Math.random() * canvas.width,
+    y: Math.random() * -canvas.height * 0.5,
+    r: Math.random() * 7 + 4,
+    color: colors[Math.floor(Math.random() * colors.length)],
+    vx: (Math.random() - 0.5) * 4,
+    vy: Math.random() * 4 + 2,
+    rot: Math.random() * Math.PI * 2,
+    vrot: (Math.random() - 0.5) * 0.15,
+    isRect: Math.random() > 0.5
+  }));
+  let frame, t = 0;
+  function draw() {
+    t++;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    pieces.forEach(p => {
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rot);
+      ctx.fillStyle = p.color;
+      if (p.isRect) { ctx.fillRect(-p.r, -p.r / 2, p.r * 2, p.r); }
+      else { ctx.beginPath(); ctx.arc(0, 0, p.r, 0, Math.PI * 2); ctx.fill(); }
+      ctx.restore();
+      p.x += p.vx; p.y += p.vy; p.rot += p.vrot;
+      if (p.y > canvas.height) { p.y = -10; p.x = Math.random() * canvas.width; }
+    });
+    frame = requestAnimationFrame(draw);
+    if (t > 200) { cancelAnimationFrame(frame); ctx.clearRect(0, 0, canvas.width, canvas.height); }
+  }
+  draw();
+}
+
+// START
+initSelect();
+</script>
+</body>
+</html>
