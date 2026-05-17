@@ -4,22 +4,19 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Příběhárna – Tichý koutek</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📖</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 body{background:#F5F0E8;font-family:'Nunito',sans-serif;max-width:640px;margin:0 auto;min-height:100dvh}
-/* ── HEADER ── */
 .hdr{background:#3C3489;padding:1.5rem 1.25rem 1.4rem;display:flex;align-items:center;gap:1rem;border-radius:0 0 24px 24px}
-.back-btn{background:rgba(255,255,255,.15);border:none;color:#EEEDFE;font-family:'Nunito',sans-serif;font-size:14px;font-weight:700;padding:8px 14px;border-radius:12px;cursor:pointer;display:flex;align-items:center;gap:6px;flex-shrink:0;transition:background .15s}
+.back-btn{background:rgba(255,255,255,.15);border:none;color:#EEEDFE;font-family:'Nunito',sans-serif;font-size:14px;font-weight:700;padding:8px 14px;border-radius:12px;cursor:pointer;display:flex;align-items:center;gap:6px;flex-shrink:0}
 .back-btn:active{background:rgba(255,255,255,.25)}
 .hdr-text h1{font-family:'Lora',serif;font-size:22px;font-weight:600;color:#EEEDFE}
 .hdr-text p{font-size:12px;color:#AFA9EC;margin-top:2px}
-/* ── LIST VIEW ── */
 .list-intro{padding:1.25rem 1rem .5rem;font-size:15px;color:#633806;font-weight:600}
 .story-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:.5rem 1rem 2rem}
-.scard{border-radius:18px;padding:1.2rem 1rem 1rem;display:flex;flex-direction:column;gap:8px;cursor:pointer;border:none;text-align:left;transition:transform .12s ease;min-height:140px}
+.scard{border-radius:18px;padding:1.2rem 1rem 1rem;display:flex;flex-direction:column;gap:8px;cursor:pointer;border:none;text-align:left;transition:transform .12s ease;min-height:140px;width:100%}
 .scard:active{transform:scale(.95)}
 .scard-ico{font-size:30px;line-height:1}
 .scard-name{font-family:'Lora',serif;font-size:16px;font-weight:600;line-height:1.2;margin-top:2px}
@@ -30,8 +27,7 @@ body{background:#F5F0E8;font-family:'Nunito',sans-serif;max-width:640px;margin:0
 .cc{background:#FAECE7}.cc .scard-name{color:#4A1B0C}.cc .scard-ref{color:#4A1B0C}
 .cp{background:#EEEDFE}.cp .scard-name{color:#26215C}.cp .scard-ref{color:#26215C}
 .cpk{background:#FBEAF0}.cpk .scard-name{color:#4B1528}.cpk .scard-ref{color:#4B1528}
-/* ── STORY VIEW ── */
-#story-view{display:none}
+.story-detail{display:none}
 .story-illo{width:100%;border-radius:0 0 24px 24px;overflow:hidden;line-height:0}
 .story-illo svg{width:100%;height:auto;display:block}
 .story-body{padding:1.25rem 1.1rem 3rem}
@@ -41,336 +37,400 @@ body{background:#F5F0E8;font-family:'Nunito',sans-serif;max-width:640px;margin:0
 .fact-box{background:#FAEEDA;border-radius:16px;padding:1rem 1.1rem;margin:1.5rem 0 1rem}
 .fact-label{font-size:12px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:#854F0B;margin-bottom:6px}
 .fact-text{font-size:15px;line-height:1.65;color:#633806;font-weight:600}
-.q-box{background:#EEEDFE;border-radius:16px;padding:1rem 1.1rem;margin:0}
+.q-box{background:#EEEDFE;border-radius:16px;padding:1rem 1.1rem}
 .q-label{font-size:12px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:#3C3489;margin-bottom:6px}
 .q-text{font-size:15px;line-height:1.65;color:#26215C;font-style:italic}
 </style>
 </head>
 <body>
 
-<!-- LIST VIEW -->
+<!-- VÝBĚR PŘÍBĚHU -->
 <div id="list-view">
   <header class="hdr">
     <a href="index.html" class="back-btn">← Zpět</a>
-    <div class="hdr-text">
-      <h1>Příběhárna</h1>
-      <p>Vyber si příběh</p>
-    </div>
+    <div class="hdr-text"><h1>Příběhárna</h1><p>Vyber si příběh</p></div>
   </header>
   <p class="list-intro">📖 Příběhy z Bible</p>
-  <div class="story-grid" id="story-grid"></div>
+  <div class="story-grid">
+    <button class="scard cb" onclick="showStory('noe')">
+      <span class="scard-ico">🌊</span>
+      <span class="scard-name">Noe a archa</span>
+      <span class="scard-ref">Genesis 6–9</span>
+    </button>
+    <button class="scard cc" onclick="showStory('david')">
+      <span class="scard-ico">🪨</span>
+      <span class="scard-name">David a Goliáš</span>
+      <span class="scard-ref">1. Samuelova 17</span>
+    </button>
+    <button class="scard ct" onclick="showStory('jonas')">
+      <span class="scard-ico">🐟</span>
+      <span class="scard-name">Jonáš a velryba</span>
+      <span class="scard-ref">Jonáš 1–3</span>
+    </button>
+    <button class="scard ca" onclick="showStory('ovce')">
+      <span class="scard-ico">🐑</span>
+      <span class="scard-name">Ztracená ovce</span>
+      <span class="scard-ref">Lukáš 15,3–7</span>
+    </button>
+    <button class="scard cp" onclick="showStory('zacheus')">
+      <span class="scard-ico">🌳</span>
+      <span class="scard-name">Ježíš a Zacheus</span>
+      <span class="scard-ref">Lukáš 19,1–10</span>
+    </button>
+    <button class="scard cpk" onclick="showStory('stvoreni')">
+      <span class="scard-ico">🌍</span>
+      <span class="scard-name">Stvoření světa</span>
+      <span class="scard-ref">Genesis 1–2</span>
+    </button>
+  </div>
 </div>
 
-<!-- STORY VIEW -->
-<div id="story-view"></div>
+<!-- NOE A ARCHA -->
+<div id="story-noe" class="story-detail">
+  <header class="hdr">
+    <button class="back-btn" onclick="showList()">← Zpět</button>
+    <div class="hdr-text"><h1>Noe a archa</h1><p>Genesis 6–9</p></div>
+  </header>
+  <div class="story-illo">
+    <svg viewBox="0 0 360 220" xmlns="http://www.w3.org/2000/svg">
+      <rect width="360" height="220" fill="#C8DFFE"/>
+      <ellipse cx="70" cy="44" rx="46" ry="22" fill="white" opacity=".9"/>
+      <ellipse cx="104" cy="32" rx="31" ry="18" fill="white" opacity=".9"/>
+      <ellipse cx="272" cy="55" rx="52" ry="24" fill="white" opacity=".85"/>
+      <ellipse cx="312" cy="40" rx="34" ry="20" fill="white" opacity=".85"/>
+      <path d="M30 152 Q180 8 330 152" stroke="#E24B4A" stroke-width="8" fill="none"/>
+      <path d="M46 152 Q180 26 314 152" stroke="#EF9F27" stroke-width="8" fill="none"/>
+      <path d="M62 152 Q180 44 298 152" stroke="#639922" stroke-width="8" fill="none"/>
+      <path d="M78 152 Q180 62 282 152" stroke="#1D9E75" stroke-width="8" fill="none"/>
+      <path d="M94 152 Q180 80 266 152" stroke="#378ADD" stroke-width="8" fill="none"/>
+      <rect y="152" width="360" height="68" fill="#378ADD"/>
+      <path d="M0 164 Q60 156 120 164 Q180 172 240 164 Q300 156 360 164" stroke="white" stroke-width="3" fill="none" opacity=".6"/>
+      <path d="M0 180 Q60 172 120 180 Q180 188 240 180 Q300 172 360 180" stroke="white" stroke-width="3" fill="none" opacity=".4"/>
+      <path d="M76 152 L108 112 L252 112 L284 152Z" fill="#854F0B"/>
+      <rect x="117" y="76" width="126" height="36" fill="#633806" rx="3"/>
+      <polygon points="107,76 180,50 253,76" fill="#412402"/>
+      <rect x="128" y="84" width="24" height="18" fill="#C8DFFE" rx="4"/>
+      <rect x="160" y="84" width="24" height="18" fill="#C8DFFE" rx="4"/>
+      <rect x="192" y="84" width="24" height="18" fill="#C8DFFE" rx="4"/>
+      <ellipse cx="318" cy="98" rx="13" ry="6" fill="white"/>
+      <path d="M305 98 Q299 88 309 91" stroke="white" stroke-width="2.5" fill="none"/>
+      <path d="M331 98 Q337 88 327 91" stroke="white" stroke-width="2.5" fill="none"/>
+      <ellipse cx="318" cy="105" rx="5" ry="3" fill="#639922"/>
+    </svg>
+  </div>
+  <div class="story-body">
+    <span class="story-ref-label">Genesis 6–9</span>
+    <h2 class="story-title">Noe a archa</h2>
+    <p class="story-para">Dávno dávno žil muž jménem Noe. Byl dobrý člověk a Bůh ho měl rád. Ostatní lidé se ale chovali špatně. Bůh řekl Noemu: „Postav velkou loď – archu. Vezmi na ni svoji rodinu a dva z každého druhu zvířat."</p>
+    <p class="story-para">Noe poslechl. Tvrdě pracoval a archu postavil přesně tak, jak mu Bůh řekl. Pak přišla všechna zvířata – sloni i myšky, lvi i beránci, ptáci i plazi. A začalo pršet.</p>
+    <p class="story-para">Pršelo čtyřicet dní a čtyřicet nocí. Voda stoupala tak vysoko, že zakryla i ty nejvyšší hory. Ale archa bezpečně plula a všichni na ní byli v bezpečí.</p>
+    <p class="story-para">Když voda opadla, archa přistála na hoře Ararat. Bůh dal Noemu krásné zaslíbení: „Nikdy více nezahubím zemi potopou." A na obloze se zjevila duha – Boží slib, který trvá dodnes.</p>
+    <div class="fact-box">
+      <div class="fact-label">💡 Věděl/a jsi?</div>
+      <p class="fact-text">Archa byla přibližně 135 metrů dlouhá – to je skoro jako dvě fotbalová hřiště za sebou!</p>
+    </div>
+    <div class="q-box">
+      <div class="q-label">💭 Zamysli se</div>
+      <p class="q-text">Jak se Noe musel cítit, když stavěl archu a sousedé se mu smáli? Dokázal/a bys ty udělat něco, čemu ostatní nevěří?</p>
+    </div>
+  </div>
+</div>
+
+<!-- DAVID A GOLIÁŠ -->
+<div id="story-david" class="story-detail">
+  <header class="hdr">
+    <button class="back-btn" onclick="showList()">← Zpět</button>
+    <div class="hdr-text"><h1>David a Goliáš</h1><p>1. Samuelova 17</p></div>
+  </header>
+  <div class="story-illo">
+    <svg viewBox="0 0 360 220" xmlns="http://www.w3.org/2000/svg">
+      <rect width="360" height="220" fill="#FAEEDA"/>
+      <circle cx="298" cy="48" r="38" fill="#FAC775" opacity=".75"/>
+      <rect y="172" width="360" height="48" fill="#C7A882"/>
+      <rect y="172" width="360" height="7" fill="#854F0B"/>
+      <circle cx="90" cy="120" r="15" fill="#FAC775"/>
+      <path d="M74 130 Q78 125 90 125 Q102 125 106 130 L108 172 L72 172Z" fill="#378ADD"/>
+      <line x1="90" y1="133" x2="60" y2="112" stroke="#633806" stroke-width="3.5" stroke-linecap="round"/>
+      <circle cx="55" cy="110" r="6" fill="#854F0B"/>
+      <path d="M55 110 Q178 32 266 108" stroke="#854F0B" stroke-width="2.5" fill="none" stroke-dasharray="7,5" opacity=".8"/>
+      <circle cx="180" cy="70" r="5.5" fill="#888780"/>
+      <rect x="76" y="168" width="12" height="20" fill="#378ADD" rx="3"/>
+      <rect x="92" y="168" width="12" height="20" fill="#378ADD" rx="3"/>
+      <circle cx="270" cy="98" r="24" fill="#B4B2A9"/>
+      <path d="M246 100 Q246 68 270 66 Q294 68 294 100" fill="#5F5E5A"/>
+      <rect x="248" y="112" width="44" height="52" fill="#888780" rx="4"/>
+      <ellipse cx="242" cy="132" rx="16" ry="24" fill="#5F5E5A"/>
+      <ellipse cx="242" cy="132" rx="10" ry="17" fill="#888780"/>
+      <rect x="303" y="72" width="5" height="90" fill="#633806" rx="2.5"/>
+      <polygon points="303,72 308,72 305.5,56" fill="#888780"/>
+      <rect x="252" y="162" width="14" height="26" fill="#5F5E5A" rx="3"/>
+      <rect x="270" y="162" width="14" height="26" fill="#5F5E5A" rx="3"/>
+      <path d="M81 117 Q90 122 99 117" stroke="#412402" stroke-width="1.5" fill="none"/>
+    </svg>
+  </div>
+  <div class="story-body">
+    <span class="story-ref-label">1. Samuelova 17</span>
+    <h2 class="story-title">David a Goliáš</h2>
+    <p class="story-para">Filištíni přišli bojovat proti Izraeli. Jejich největší válečník se jmenoval Goliáš – byl skoro třikrát vyšší než normální člověk. Každý den vycházel a křičel: „Pošlete mi někoho! Kdo mě porazí, ten vyhraje válku!"</p>
+    <p class="story-para">Všichni se báli. Jen jeden mladý pastýř ne. Jmenoval se David. Přinesl svým bratrům jídlo do tábora, uslyšel Goliáše a řekl: „Já s ním budu bojovat! Bůh mi pomohl přemoci lva i medvěda – pomůže mi i teď."</p>
+    <p class="story-para">David si vybral pět hladkých kamenů z potoka a vzal svůj prak. Goliáš se mu vysmál: „Ty jsi jen kluk!" David odpověděl: „Ty jdeš s mečem, ale já jdu ve jménu Boha!"</p>
+    <p class="story-para">David roztočil prak a kamenem zasáhl Goliáše přímo do čela. Obr padl. Celá armáda Filištínů se obrátila na útěk. David ukázal, že s Bohem může i ten nejmenší přemoci toho největšího.</p>
+    <div class="fact-box">
+      <div class="fact-label">💡 Věděl/a jsi?</div>
+      <p class="fact-text">David byl nejmladší z osmi bratrů. Před bitvou pásl ovce na poli – nebyl žádný voják, jen pastýř.</p>
+    </div>
+    <div class="q-box">
+      <div class="q-label">💭 Zamysli se</div>
+      <p class="q-text">Stalo se ti někdy, že ses musel/a postavit něčemu, co se zdálo příliš velké? Jak ses cítil/a?</p>
+    </div>
+  </div>
+</div>
+
+<!-- JONÁŠ A VELRYBA -->
+<div id="story-jonas" class="story-detail">
+  <header class="hdr">
+    <button class="back-btn" onclick="showList()">← Zpět</button>
+    <div class="hdr-text"><h1>Jonáš a velryba</h1><p>Jonáš 1–3</p></div>
+  </header>
+  <div class="story-illo">
+    <svg viewBox="0 0 360 220" xmlns="http://www.w3.org/2000/svg">
+      <rect width="360" height="82" fill="#26215C"/>
+      <circle cx="52" cy="32" r="2" fill="white"/>
+      <circle cx="98" cy="48" r="1.5" fill="white" opacity=".8"/>
+      <circle cx="148" cy="18" r="2.5" fill="white"/>
+      <circle cx="195" cy="38" r="1.5" fill="white"/>
+      <circle cx="238" cy="14" r="2" fill="white" opacity=".9"/>
+      <circle cx="282" cy="44" r="1.5" fill="white" opacity=".8"/>
+      <circle cx="318" cy="22" r="2" fill="white"/>
+      <circle cx="52" cy="32" r="16" fill="#EEEDFE"/>
+      <circle cx="60" cy="27" r="14" fill="#26215C"/>
+      <rect y="82" width="360" height="138" fill="#0F6E56"/>
+      <path d="M0 82 Q45 72 90 82 Q135 92 180 82 Q225 72 270 82 Q315 92 360 82" fill="#1D9E75"/>
+      <ellipse cx="185" cy="152" rx="132" ry="57" fill="#888780"/>
+      <polygon points="53,152 20,118 20,186" fill="#5F5E5A"/>
+      <ellipse cx="192" cy="163" rx="103" ry="37" fill="#B4B2A9" opacity=".55"/>
+      <circle cx="296" cy="133" r="13" fill="white"/>
+      <circle cx="299" cy="133" r="8" fill="#2C2C2A"/>
+      <circle cx="301" cy="131" r="3" fill="white"/>
+      <path d="M310 150 Q326 161 310 172" stroke="#5F5E5A" stroke-width="3" fill="none"/>
+      <ellipse cx="175" cy="150" rx="22" ry="14" fill="#F5C4B3" opacity=".65"/>
+      <circle cx="175" cy="136" r="10" fill="#FAC775" opacity=".8"/>
+      <path d="M162 150 Q168 141 175 144" stroke="#FAC775" stroke-width="3.5" fill="none" opacity=".8"/>
+      <path d="M188 150 Q182 141 175 144" stroke="#FAC775" stroke-width="3.5" fill="none" opacity=".8"/>
+      <circle cx="306" cy="108" r="5" fill="white" opacity=".3"/>
+      <circle cx="326" cy="92" r="3.5" fill="white" opacity=".25"/>
+    </svg>
+  </div>
+  <div class="story-body">
+    <span class="story-ref-label">Jonáš 1–3</span>
+    <h2 class="story-title">Jonáš a velryba</h2>
+    <p class="story-para">Bůh řekl Jonášovi: „Jdi do města Ninive a řekni lidem, že se mají přestat chovat špatně." Ale Jonáš se bál a nasedl na loď, která plula úplně jiným směrem – pryč od Boha.</p>
+    <p class="story-para">Na moři se strhla ohromná bouře. Loď se kymácela a vlny ji zaplavovaly. Jonáš věděl, že bouře je kvůli němu. Řekl námořníkům: „Hoďte mě do moře a bouře přestane." Námořníci to nechtěli – ale bouře byla čím dál horší. Nakonec Jonáše hodili do vln. Ihned bylo ticho.</p>
+    <p class="story-para">Jonáš se potápl do tmy. Ale Bůh poslal velkou rybu, která ho spolkla. Tři dny a tři noci byl Jonáš v břiše ryby. Modlil se a prosil Boha za odpuštění. Ryba ho pak vyvrhla na suché zemi.</p>
+    <p class="story-para">Tentokrát Jonáš poslechl a šel do Ninive. A stalo se něco úžasného – všichni lidé litovali svých špatných skutků a Bůh jim odpustil. Jonáš zjistil, že Bůh miluje opravdu všechny.</p>
+    <div class="fact-box">
+      <div class="fact-label">💡 Věděl/a jsi?</div>
+      <p class="fact-text">Ninive bylo jedno z největších měst starověkého světa. Jonášovi trvalo tři dny, než celým městem prošel.</p>
+    </div>
+    <div class="q-box">
+      <div class="q-label">💭 Zamysli se</div>
+      <p class="q-text">Utíkal/a jsi někdy od něčeho, o čem jsi věděl/a, že bys to udělat měl/a? Co tě nakonec přimělo to udělat?</p>
+    </div>
+  </div>
+</div>
+
+<!-- ZTRACENÁ OVCE -->
+<div id="story-ovce" class="story-detail">
+  <header class="hdr">
+    <button class="back-btn" onclick="showList()">← Zpět</button>
+    <div class="hdr-text"><h1>Ztracená ovce</h1><p>Lukáš 15,3–7</p></div>
+  </header>
+  <div class="story-illo">
+    <svg viewBox="0 0 360 220" xmlns="http://www.w3.org/2000/svg">
+      <rect width="360" height="220" fill="#E6F1FB"/>
+      <circle cx="308" cy="48" r="34" fill="#FAC775" opacity=".7"/>
+      <ellipse cx="0" cy="200" rx="130" ry="80" fill="#97C459"/>
+      <ellipse cx="180" cy="195" rx="155" ry="72" fill="#639922"/>
+      <ellipse cx="360" cy="205" rx="130" ry="76" fill="#97C459"/>
+      <ellipse cx="50" cy="168" rx="16" ry="11" fill="white"/>
+      <circle cx="50" cy="158" r="8" fill="white"/>
+      <ellipse cx="110" cy="174" rx="14" ry="9" fill="white"/>
+      <circle cx="110" cy="166" r="7" fill="white"/>
+      <ellipse cx="292" cy="172" rx="15" ry="10" fill="white"/>
+      <circle cx="292" cy="163" r="7" fill="white"/>
+      <ellipse cx="330" cy="178" rx="13" ry="9" fill="white"/>
+      <circle cx="330" cy="170" r="6" fill="white"/>
+      <rect x="172" y="122" width="32" height="62" fill="#633806" rx="9"/>
+      <path d="M172 148 L159 188" stroke="#854F0B" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <path d="M204 148 L217 188" stroke="#854F0B" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <rect x="216" y="100" width="5" height="90" fill="#412402" rx="2.5"/>
+      <path d="M221 100 Q238 89 228 108" stroke="#412402" stroke-width="5" fill="none"/>
+      <circle cx="188" cy="112" r="17" fill="#FAC775"/>
+      <path d="M171 108 Q188 94 205 108" fill="#854F0B"/>
+      <ellipse cx="188" cy="96" rx="30" ry="20" fill="white"/>
+      <ellipse cx="172" cy="91" rx="15" ry="13" fill="white"/>
+      <ellipse cx="204" cy="89" rx="15" ry="13" fill="white"/>
+      <ellipse cx="188" cy="83" rx="20" ry="13" fill="white"/>
+      <ellipse cx="214" cy="80" rx="12" ry="10" fill="white"/>
+      <circle cx="220" cy="76" r="3.5" fill="#B4B2A9"/>
+      <rect x="176" y="112" width="5" height="12" fill="#B4B2A9" rx="2"/>
+      <rect x="184" y="113" width="5" height="12" fill="#B4B2A9" rx="2"/>
+      <rect x="194" y="112" width="5" height="12" fill="#B4B2A9" rx="2"/>
+      <path d="M181 118 Q188 123 195 118" stroke="#633806" stroke-width="2" fill="none"/>
+    </svg>
+  </div>
+  <div class="story-body">
+    <span class="story-ref-label">Lukáš 15,3–7</span>
+    <h2 class="story-title">Ztracená ovce</h2>
+    <p class="story-para">Ježíš vyprávěl tento příběh: Byl jednou pastýř, který měl sto ovcí. Znal každou z nich. Jednoho dne si je počítal – a zjistil, že jedna chybí. Devětadevadesát bylo v bezpečí, ale jedna se ztratila.</p>
+    <p class="story-para">Pastýř nenechal ztracenou ovci být. Vydal se ji hledat. Hledal v horách, v trní, ve tmě. Hledal tak dlouho, dokud ji nenašel.</p>
+    <p class="story-para">A když ji konečně našel – byl tak šťastný, že ji vzal na ramena a nesl ji domů. Pak zavolal přátele a sousedy: „Pojďte slavit se mnou! Našel jsem svou ztracenou ovci!"</p>
+    <p class="story-para">Ježíš říká, že stejně tak se Bůh raduje z každého člověka, který se k němu vrátí. Nejsi jen číslo v davu. Bůh tě zná jménem a nikdy tě nepřestane hledat.</p>
+    <div class="fact-box">
+      <div class="fact-label">💡 Věděl/a jsi?</div>
+      <p class="fact-text">Pastýři v Palestině znali každou svou ovci jménem. Ovce znaly hlas svého pastýře a šly jedině za ním.</p>
+    </div>
+    <div class="q-box">
+      <div class="q-label">💭 Zamysli se</div>
+      <p class="q-text">Jak ti je příjemné vědět, že Bůh tě hledá – i tehdy, když se ztratíš?</p>
+    </div>
+  </div>
+</div>
+
+<!-- JEŽÍŠ A ZACHEUS -->
+<div id="story-zacheus" class="story-detail">
+  <header class="hdr">
+    <button class="back-btn" onclick="showList()">← Zpět</button>
+    <div class="hdr-text"><h1>Ježíš a Zacheus</h1><p>Lukáš 19,1–10</p></div>
+  </header>
+  <div class="story-illo">
+    <svg viewBox="0 0 360 220" xmlns="http://www.w3.org/2000/svg">
+      <rect width="360" height="220" fill="#FAEEDA"/>
+      <rect y="188" width="360" height="32" fill="#C7A882"/>
+      <rect y="188" width="360" height="7" fill="#854F0B"/>
+      <rect x="162" y="104" width="32" height="88" fill="#854F0B" rx="5"/>
+      <path d="M162 188 Q146 198 132 204" stroke="#633806" stroke-width="6" fill="none" stroke-linecap="round"/>
+      <path d="M194 188 Q210 198 224 204" stroke="#633806" stroke-width="6" fill="none" stroke-linecap="round"/>
+      <ellipse cx="178" cy="92" rx="73" ry="58" fill="#3B6D11"/>
+      <ellipse cx="156" cy="76" rx="52" ry="42" fill="#639922"/>
+      <ellipse cx="200" cy="73" rx="50" ry="40" fill="#639922"/>
+      <ellipse cx="178" cy="58" rx="58" ry="37" fill="#97C459"/>
+      <rect x="118" y="120" width="44" height="8" fill="#854F0B" rx="4"/>
+      <rect x="204" y="116" width="42" height="8" fill="#854F0B" rx="4"/>
+      <circle cx="178" cy="106" r="14" fill="#FAC775"/>
+      <rect x="165" y="120" width="26" height="24" fill="#D85A30" rx="6"/>
+      <circle cx="172" cy="103" r="2.5" fill="#412402"/>
+      <circle cx="184" cy="103" r="2.5" fill="#412402"/>
+      <path d="M172 111 Q178 115 184 111" stroke="#412402" stroke-width="1.8" fill="none"/>
+      <ellipse cx="52" cy="183" rx="15" ry="9" fill="#888780"/>
+      <circle cx="52" cy="173" r="11" fill="#888780"/>
+      <ellipse cx="82" cy="182" rx="14" ry="8" fill="#5F5E5A"/>
+      <circle cx="82" cy="173" r="10" fill="#5F5E5A"/>
+      <ellipse cx="298" cy="183" rx="14" ry="8" fill="#888780"/>
+      <circle cx="298" cy="173" r="10" fill="#888780"/>
+      <ellipse cx="326" cy="182" rx="13" ry="8" fill="#5F5E5A"/>
+      <circle cx="326" cy="173" r="10" fill="#5F5E5A"/>
+      <circle cx="248" cy="152" r="18" fill="#FAC775"/>
+      <path d="M234 170 L226 220 L270 220 L262 170Z" fill="white"/>
+      <path d="M228 152 Q248 136 268 152" fill="#C7A882"/>
+      <line x1="262" y1="162" x2="290" y2="128" stroke="#FAC775" stroke-width="9" stroke-linecap="round"/>
+      <line x1="290" y1="128" x2="294" y2="114" stroke="#FAC775" stroke-width="7" stroke-linecap="round"/>
+    </svg>
+  </div>
+  <div class="story-body">
+    <span class="story-ref-label">Lukáš 19,1–10</span>
+    <h2 class="story-title">Ježíš a Zacheus</h2>
+    <p class="story-para">V Jerichu žil výběrčí daní jménem Zacheus. Byl bohatý, ale nikdo ho neměl rád – výběrčí totiž lidi často podváděli. Zacheus byl navíc malý, skoro nejmenší člověk v celém městě.</p>
+    <p class="story-para">Jednoho dne šel Jerichem Ježíš. Všichni ho chtěli vidět – celé město se sbíhalo k cestě. Ale Zacheus přes hlavy ostatních nic neviděl. Nevzdal to – vylezl na strom u cesty a čekal.</p>
+    <p class="story-para">Když Ježíš přišel ke stromu, zastavil se, vzhlédl a řekl: „Zachee, pojď rychle dolů! Dnes musím zůstat v tvém domě." Zacheus slezl dolů úplně přešťastný. Lidé reptali: „Jak může jít Ježíš k takovému hříšníkovi?"</p>
+    <p class="story-para">Ale Zacheus stál před Ježíšem a řekl: „Polovinu majetku dám chudým. Koho jsem podvedl, tomu vrátím čtyřnásobek." Ježíš se usmál: „Dnes přišla záchrana do tohoto domu." Ježíš přichází i k těm, od nichž to nikdo nečeká.</p>
+    <div class="fact-box">
+      <div class="fact-label">💡 Věděl/a jsi?</div>
+      <p class="fact-text">Strom, na který Zacheus vylezl, byl sykomorový fíkovník – může dorůst výšky až 15 metrů. To muselo být pěkně vysoko!</p>
+    </div>
+    <div class="q-box">
+      <div class="q-label">💭 Zamysli se</div>
+      <p class="q-text">Je ve tvém životě něco, co bys chtěl/a napravit? Jak se asi Zacheus cítil po setkání s Ježíšem?</p>
+    </div>
+  </div>
+</div>
+
+<!-- STVOŘENÍ SVĚTA -->
+<div id="story-stvoreni" class="story-detail">
+  <header class="hdr">
+    <button class="back-btn" onclick="showList()">← Zpět</button>
+    <div class="hdr-text"><h1>Stvoření světa</h1><p>Genesis 1–2</p></div>
+  </header>
+  <div class="story-illo">
+    <svg viewBox="0 0 360 220" xmlns="http://www.w3.org/2000/svg">
+      <rect width="360" height="220" fill="#26215C"/>
+      <circle cx="52" cy="32" r="2.5" fill="white"/>
+      <circle cx="98" cy="50" r="1.5" fill="white" opacity=".8"/>
+      <circle cx="145" cy="16" r="2" fill="white"/>
+      <circle cx="188" cy="40" r="1.5" fill="white"/>
+      <circle cx="232" cy="12" r="2.5" fill="white" opacity=".9"/>
+      <circle cx="276" cy="46" r="1.5" fill="white" opacity=".8"/>
+      <circle cx="342" cy="28" r="2" fill="white"/>
+      <circle cx="68" cy="68" r="1" fill="white" opacity=".6"/>
+      <circle cx="310" cy="62" r="1" fill="white" opacity=".6"/>
+      <circle cx="168" cy="72" r="1.5" fill="white" opacity=".5"/>
+      <circle cx="292" cy="72" r="38" fill="#FAC775" opacity=".2"/>
+      <circle cx="292" cy="72" r="28" fill="#FAC775" opacity=".45"/>
+      <circle cx="292" cy="72" r="18" fill="#EF9F27"/>
+      <line x1="292" y1="36" x2="292" y2="28" stroke="#FAC775" stroke-width="3.5"/>
+      <line x1="292" y1="108" x2="292" y2="116" stroke="#FAC775" stroke-width="3.5"/>
+      <line x1="256" y1="72" x2="248" y2="72" stroke="#FAC775" stroke-width="3.5"/>
+      <line x1="328" y1="72" x2="336" y2="72" stroke="#FAC775" stroke-width="3.5"/>
+      <line x1="267" y1="47" x2="261" y2="41" stroke="#FAC775" stroke-width="3"/>
+      <line x1="317" y1="97" x2="323" y2="103" stroke="#FAC775" stroke-width="3"/>
+      <line x1="267" y1="97" x2="261" y2="103" stroke="#FAC775" stroke-width="3"/>
+      <line x1="317" y1="47" x2="323" y2="41" stroke="#FAC775" stroke-width="3"/>
+      <circle cx="62" cy="60" r="22" fill="#EEEDFE"/>
+      <circle cx="72" cy="54" r="19" fill="#26215C"/>
+      <ellipse cx="180" cy="188" rx="205" ry="58" fill="#378ADD"/>
+      <ellipse cx="96" cy="194" rx="116" ry="48" fill="#3B6D11"/>
+      <ellipse cx="264" cy="198" rx="95" ry="44" fill="#3B6D11"/>
+      <ellipse cx="180" cy="184" rx="84" ry="38" fill="#639922"/>
+      <rect x="86" y="146" width="8" height="32" fill="#412402" rx="3"/>
+      <polygon points="90,146 74,114 106,114" fill="#3B6D11"/>
+      <polygon points="90,132 78,105 102,105" fill="#639922"/>
+      <rect x="248" y="150" width="8" height="28" fill="#412402" rx="3"/>
+      <polygon points="252,150 236,118 268,118" fill="#3B6D11"/>
+      <polygon points="252,136 240,110 264,110" fill="#639922"/>
+      <path d="M136 90 Q144 82 152 90" stroke="white" stroke-width="2.5" fill="none"/>
+      <path d="M160 102 Q167 94 174 102" stroke="white" stroke-width="2.5" fill="none"/>
+    </svg>
+  </div>
+  <div class="story-body">
+    <span class="story-ref-label">Genesis 1–2</span>
+    <h2 class="story-title">Stvoření světa</h2>
+    <p class="story-para">Na úplném začátku nebylo nic – jen tma a prázdnota. A pak Bůh promluvil: „Buď světlo!" A světlo bylo. Bůh viděl, že je dobré. Nastal první den.</p>
+    <p class="story-para">Bůh postupně tvořil dál. Oddělil vody a stvořil oblohu. Shromáždil moře a nechal vyrůst souš. Pokryl ji trávou, stromy a všemi druhy rostlin. Stvořil slunce, měsíc a hvězdy. Naplnil moře rybami a oblohu ptáky.</p>
+    <p class="story-para">Šestého dne přišla na svět všechna suchozemská zvířata. A nakonec – jako vrchol celého stvoření – Bůh stvořil člověka. Stvořil ho ke svému obrazu a vdechl mu život.</p>
+    <p class="story-para">Sedmého dne Bůh odpočinul. Podíval se na vše, co stvořil – a bylo to velmi dobré. Tento svět, příroda, zvířata, hvězdy i ty sám/sama – to vše je Boží dílo. A je to krásné.</p>
+    <div class="fact-box">
+      <div class="fact-label">💡 Věděl/a jsi?</div>
+      <p class="fact-text">Slovo „Genesis" pochází z řečtiny a znamená „počátek" nebo „vznik". Je to první kniha celé Bible.</p>
+    </div>
+    <div class="q-box">
+      <div class="q-label">💭 Zamysli se</div>
+      <p class="q-text">Co se ti z Božího stvoření líbí nejvíc? Proč myslíš, že Bůh stvořil člověka jako poslední ze všeho?</p>
+    </div>
+  </div>
+</div>
 
 <script>
-const stories = [
-  {
-    id:'noe', emoji:'🌊', title:'Noe a archa', ref:'Genesis 6–9', color:'cb',
-    svg:`<svg viewBox="0 0 360 220" xmlns="http://www.w3.org/2000/svg">
-<rect width="360" height="220" fill="#C8DFFE"/>
-<ellipse cx="70" cy="44" rx="46" ry="22" fill="white" opacity=".9"/>
-<ellipse cx="104" cy="32" rx="31" ry="18" fill="white" opacity=".9"/>
-<ellipse cx="272" cy="55" rx="52" ry="24" fill="white" opacity=".85"/>
-<ellipse cx="312" cy="40" rx="34" ry="20" fill="white" opacity=".85"/>
-<path d="M30 152 Q180 8 330 152" stroke="#E24B4A" stroke-width="8" fill="none"/>
-<path d="M46 152 Q180 26 314 152" stroke="#EF9F27" stroke-width="8" fill="none"/>
-<path d="M62 152 Q180 44 298 152" stroke="#639922" stroke-width="8" fill="none"/>
-<path d="M78 152 Q180 62 282 152" stroke="#1D9E75" stroke-width="8" fill="none"/>
-<path d="M94 152 Q180 80 266 152" stroke="#378ADD" stroke-width="8" fill="none"/>
-<rect y="152" width="360" height="68" fill="#378ADD"/>
-<path d="M0 164 Q60 156 120 164 Q180 172 240 164 Q300 156 360 164" stroke="white" stroke-width="3" fill="none" opacity=".6"/>
-<path d="M0 180 Q60 172 120 180 Q180 188 240 180 Q300 172 360 180" stroke="white" stroke-width="3" fill="none" opacity=".4"/>
-<path d="M76 152 L108 112 L252 112 L284 152Z" fill="#854F0B"/>
-<rect x="117" y="76" width="126" height="36" fill="#633806" rx="3"/>
-<polygon points="107,76 180,50 253,76" fill="#412402"/>
-<rect x="128" y="84" width="24" height="18" fill="#C8DFFE" rx="4"/>
-<rect x="160" y="84" width="24" height="18" fill="#C8DFFE" rx="4"/>
-<rect x="192" y="84" width="24" height="18" fill="#C8DFFE" rx="4"/>
-<ellipse cx="318" cy="98" rx="13" ry="6" fill="white"/>
-<path d="M305 98 Q299 88 309 91" stroke="white" stroke-width="2.5" fill="none"/>
-<path d="M331 98 Q337 88 327 91" stroke="white" stroke-width="2.5" fill="none"/>
-<ellipse cx="318" cy="105" rx="5" ry="3" fill="#639922"/>
-</svg>`,
-    paras:[
-      'Dávno dávno žil muž jménem Noe. Byl dobrý člověk a Bůh ho měl rád. Ostatní lidé se ale chovali špatně. Bůh řekl Noemu: „Postav velkou loď – archu. Vezmi na ni svoji rodinu a dva z každého druhu zvířat."',
-      'Noe poslechl. Tvrdě pracoval a archu postavil přesně tak, jak mu Bůh řekl. Pak přišla všechna zvířata – sloni i myšky, lvi i beránci, ptáci i plazi. A začalo pršet.',
-      'Pršelo čtyřicet dní a čtyřicet nocí. Voda stoupala tak vysoko, že zakryla i ty nejvyšší hory. Ale archa bezpečně plula a všichni na ní byli v bezpečí.',
-      'Když voda opadla, archa přistála na hoře Ararat. Bůh dal Noemu krásné zaslíbení: „Nikdy více nezahubím zemi potopou." A na obloze se zjevila duha – Boží slib, který trvá dodnes.'
-    ],
-    fact:'Archa byla přibližně 135 metrů dlouhá – to je skoro jako dvě fotbalová hřiště za sebou!',
-    question:'Jak se Noe musel cítit, když stavěl archu a sousedé se mu smáli? Dokázal/a bys ty udělat něco, čemu ostatní nevěří?'
-  },
-  {
-    id:'david', emoji:'🪨', title:'David a Goliáš', ref:'1. Samuelova 17', color:'cc',
-    svg:`<svg viewBox="0 0 360 220" xmlns="http://www.w3.org/2000/svg">
-<rect width="360" height="220" fill="#FAEEDA"/>
-<circle cx="298" cy="48" r="38" fill="#FAC775" opacity=".75"/>
-<rect y="172" width="360" height="48" fill="#C7A882"/>
-<rect y="172" width="360" height="7" fill="#854F0B"/>
-<circle cx="90" cy="120" r="15" fill="#FAC775"/>
-<path d="M74 130 Q78 125 90 125 Q102 125 106 130 L108 172 L72 172Z" fill="#378ADD" rx="4"/>
-<line x1="90" y1="133" x2="60" y2="112" stroke="#633806" stroke-width="3.5" stroke-linecap="round"/>
-<circle cx="55" cy="110" r="6" fill="#854F0B"/>
-<path d="M55 110 Q178 32 266 108" stroke="#854F0B" stroke-width="2.5" fill="none" stroke-dasharray="7,5" opacity=".8"/>
-<circle cx="180" cy="70" r="5.5" fill="#888780"/>
-<rect x="76" y="168" width="12" height="20" fill="#378ADD" rx="3"/>
-<rect x="92" y="168" width="12" height="20" fill="#378ADD" rx="3"/>
-<circle cx="270" cy="98" r="24" fill="#B4B2A9"/>
-<path d="M246 100 Q246 68 270 66 Q294 68 294 100" fill="#5F5E5A"/>
-<rect x="248" y="112" width="44" height="52" fill="#888780" rx="4"/>
-<ellipse cx="242" cy="132" rx="16" ry="24" fill="#5F5E5A"/>
-<ellipse cx="242" cy="132" rx="10" ry="17" fill="#888780"/>
-<rect x="303" y="72" width="5" height="90" fill="#633806" rx="2.5"/>
-<polygon points="303,72 308,72 305.5,56" fill="#888780"/>
-<rect x="252" y="162" width="14" height="26" fill="#5F5E5A" rx="3"/>
-<rect x="270" y="162" width="14" height="26" fill="#5F5E5A" rx="3"/>
-<path d="M81 117 Q90 122 99 117" stroke="#412402" stroke-width="1.5" fill="none"/>
-</svg>`,
-    paras:[
-      'Filištíni přišli bojovat proti Izraeli. Jejich největší válečník se jmenoval Goliáš – byl skoro třikrát vyšší než normální člověk. Každý den vycházel a křičel: „Pošlete mi někoho! Kdo mě porazí, ten vyhraje válku!"',
-      'Všichni se báli. Jen jeden mladý pastýř ne. Jmenoval se David. Přinesl svým bratrům jídlo do tábora, uslyšel Goliáše a řekl: „Já s ním budu bojovat! Bůh mi pomohl přemoci lva i medvěda – pomůže mi i teď."',
-      'David si vybral pět hladkých kamenů z potoka a vzal svůj prak. Goliáš se mu vysmál: „Ty jsi jen kluk!" David odpověděl: „Ty jdeš s mečem, ale já jdu ve jménu Boha!"',
-      'David roztočil prak a kamenem zasáhl Goliáše přímo do čela. Obr padl. Celá armáda Filištínů se obrátila na útěk. David ukázal, že s Bohem může i ten nejmenší přemoci toho největšího.'
-    ],
-    fact:'David byl nejmladší z osmi bratrů. Před bitvou pásl ovce na poli – nebyl žádný voják, jen pastýř.',
-    question:'Stalo se ti někdy, že ses musel/a postavit něčemu, co se zdálo příliš velké? Jak ses cítil/a?'
-  },
-  {
-    id:'jonas', emoji:'🐟', title:'Jonáš a velryba', ref:'Jonáš 1–3', color:'ct',
-    svg:`<svg viewBox="0 0 360 220" xmlns="http://www.w3.org/2000/svg">
-<rect width="360" height="82" fill="#26215C"/>
-<circle cx="52" cy="32" r="2" fill="white"/>
-<circle cx="98" cy="48" r="1.5" fill="white" opacity=".8"/>
-<circle cx="148" cy="18" r="2.5" fill="white"/>
-<circle cx="195" cy="38" r="1.5" fill="white"/>
-<circle cx="238" cy="14" r="2" fill="white" opacity=".9"/>
-<circle cx="282" cy="44" r="1.5" fill="white" opacity=".8"/>
-<circle cx="318" cy="22" r="2" fill="white"/>
-<circle cx="72" cy="62" r="1" fill="white" opacity=".6"/>
-<circle cx="258" cy="58" r="1" fill="white" opacity=".6"/>
-<circle cx="170" cy="66" r="1.5" fill="white" opacity=".5"/>
-<circle cx="52" cy="32" r="16" fill="#EEEDFE"/>
-<circle cx="60" cy="27" r="14" fill="#26215C"/>
-<rect y="82" width="360" height="138" fill="#0F6E56"/>
-<path d="M0 82 Q45 72 90 82 Q135 92 180 82 Q225 72 270 82 Q315 92 360 82" fill="#1D9E75"/>
-<ellipse cx="178" cy="158" rx="150" ry="60" fill="#085041" opacity=".5"/>
-<ellipse cx="185" cy="152" rx="132" ry="57" fill="#888780"/>
-<polygon points="53,152 20,118 20,186" fill="#5F5E5A"/>
-<ellipse cx="192" cy="163" rx="103" ry="37" fill="#B4B2A9" opacity=".55"/>
-<circle cx="296" cy="133" r="13" fill="white"/>
-<circle cx="299" cy="133" r="8" fill="#2C2C2A"/>
-<circle cx="301" cy="131" r="3" fill="white"/>
-<path d="M310 150 Q326 161 310 172" stroke="#5F5E5A" stroke-width="3" fill="none"/>
-<ellipse cx="175" cy="150" rx="22" ry="14" fill="#F5C4B3" opacity=".65"/>
-<circle cx="175" cy="136" r="10" fill="#FAC775" opacity=".8"/>
-<path d="M162 150 Q168 141 175 144" stroke="#FAC775" stroke-width="3.5" fill="none" opacity=".8"/>
-<path d="M188 150 Q182 141 175 144" stroke="#FAC775" stroke-width="3.5" fill="none" opacity=".8"/>
-<circle cx="306" cy="108" r="5" fill="white" opacity=".3"/>
-<circle cx="326" cy="92" r="3.5" fill="white" opacity=".25"/>
-<circle cx="292" cy="94" r="4" fill="white" opacity=".2"/>
-</svg>`,
-    paras:[
-      'Bůh řekl Jonášovi: „Jdi do města Ninive a řekni lidem, že se mají přestat chovat špatně." Ale Jonáš se bál a nasedl na loď, která plula úplně jiným směrem – pryč od Boha.',
-      'Na moři se strhla ohromná bouře. Loď se kymácela a vlny ji zaplavovaly. Jonáš věděl, že bouře je kvůli němu. Řekl námořníkům: „Hoďte mě do moře a bouře přestane." Námořníci to nechtěli, ale bouře byla čím dál horší. Nakonec Jonáše hodili do vln – a ihned bylo ticho.',
-      'Jonáš se potápl do tmy. Ale Bůh poslal velkou rybu, která ho spolkla. Tři dny a tři noci byl Jonáš v břiše ryby. Modlil se a prosil Boha za odpuštění. Ryba ho pak vyvrhla na suché zemi.',
-      'Tentokrát Jonáš poslechl a šel do Ninive. A stalo se něco úžasného – všichni lidé litovali svých špatných skutků a Bůh jim odpustil. Jonáš zjistil, že Bůh miluje opravdu všechny – i ty, od nichž bychom to nečekali.'
-    ],
-    fact:'Ninive bylo jedno z největších měst starověkého světa. Jonášovi trvalo tři dny, než prošel celé město.',
-    question:'Utíkal/a jsi někdy od něčeho, o čem jsi věděl/a, že bys to udělat měl/a? Co tě nakonec přimělo to udělat?'
-  },
-  {
-    id:'ovce', emoji:'🐑', title:'Ztracená ovce', ref:'Lukáš 15,3–7', color:'ca',
-    svg:`<svg viewBox="0 0 360 220" xmlns="http://www.w3.org/2000/svg">
-<rect width="360" height="220" fill="#E6F1FB"/>
-<circle cx="308" cy="48" r="34" fill="#FAC775" opacity=".7"/>
-<ellipse cx="0" cy="200" rx="130" ry="80" fill="#97C459"/>
-<ellipse cx="180" cy="195" rx="155" ry="72" fill="#639922"/>
-<ellipse cx="360" cy="205" rx="130" ry="76" fill="#97C459"/>
-<ellipse cx="50" cy="168" rx="16" ry="11" fill="white"/>
-<circle cx="50" cy="158" r="8" fill="white"/>
-<circle cx="44" cy="155" r="3" fill="#B4B2A9"/>
-<ellipse cx="110" cy="174" rx="14" ry="9" fill="white"/>
-<circle cx="110" cy="166" r="7" fill="white"/>
-<ellipse cx="292" cy="172" rx="15" ry="10" fill="white"/>
-<circle cx="292" cy="163" r="7" fill="white"/>
-<ellipse cx="330" cy="178" rx="13" ry="9" fill="white"/>
-<circle cx="330" cy="170" r="6" fill="white"/>
-<rect x="172" y="122" width="32" height="62" fill="#633806" rx="9"/>
-<path d="M172 148 L159 188" stroke="#854F0B" stroke-width="4" fill="none" stroke-linecap="round"/>
-<path d="M204 148 L217 188" stroke="#854F0B" stroke-width="4" fill="none" stroke-linecap="round"/>
-<rect x="216" y="100" width="5" height="90" fill="#412402" rx="2.5"/>
-<path d="M221 100 Q238 89 228 108" stroke="#412402" stroke-width="5" fill="none"/>
-<circle cx="188" cy="112" r="17" fill="#FAC775"/>
-<path d="M171 108 Q188 94 205 108" fill="#854F0B" rx="5"/>
-<ellipse cx="188" cy="96" rx="30" ry="20" fill="white"/>
-<ellipse cx="172" cy="91" rx="15" ry="13" fill="white"/>
-<ellipse cx="204" cy="89" rx="15" ry="13" fill="white"/>
-<ellipse cx="188" cy="83" rx="20" ry="13" fill="white"/>
-<ellipse cx="214" cy="80" rx="12" ry="10" fill="white"/>
-<circle cx="220" cy="76" r="3.5" fill="#B4B2A9"/>
-<rect x="176" y="112" width="5" height="12" fill="#B4B2A9" rx="2"/>
-<rect x="184" y="113" width="5" height="12" fill="#B4B2A9" rx="2"/>
-<rect x="194" y="112" width="5" height="12" fill="#B4B2A9" rx="2"/>
-<path d="M181 118 Q188 123 195 118" stroke="#633806" stroke-width="2" fill="none"/>
-</svg>`,
-    paras:[
-      'Ježíš vyprávěl tento příběh: Byl jednou pastýř, který měl sto ovcí. Znal každou z nich. Jednoho dne si je počítal – a zjistil, že jedna chybí. Devětadevadesát bylo v bezpečí, ale jedna se ztratila.',
-      'Pastýř nenechal ztracenou ovci být. Vydal se ji hledat. Hledal v horách, v trní, ve tmě. Hledal tak dlouho, dokud ji nenašel.',
-      'A když ji konečně našel – byl tak šťastný, že ji vzal na ramena a nesl ji domů. Pak zavolal přátele a sousedy: „Pojďte slavit se mnou! Našel jsem svou ztracenou ovci!"',
-      'Ježíš říká, že stejně tak se Bůh raduje z každého člověka, který se k němu vrátí. Nejsi jen číslo v davu. Bůh tě zná jménem a nikdy tě nepřestane hledat.'
-    ],
-    fact:'Pastýři v Palestině znali každou svou ovci jménem. Ovce znaly hlas svého pastýře a šly jedině za ním.',
-    question:'Jak ti je příjemné vědět, že Bůh tě hledá – i tehdy, když se ztratíš?'
-  },
-  {
-    id:'zacheus', emoji:'🌳', title:'Ježíš a Zacheus', ref:'Lukáš 19,1–10', color:'cp',
-    svg:`<svg viewBox="0 0 360 220" xmlns="http://www.w3.org/2000/svg">
-<rect width="360" height="220" fill="#FAEEDA"/>
-<rect y="188" width="360" height="32" fill="#C7A882"/>
-<rect y="188" width="360" height="7" fill="#854F0B"/>
-<rect x="162" y="104" width="32" height="88" fill="#854F0B" rx="5"/>
-<path d="M162 188 Q146 198 132 204" stroke="#633806" stroke-width="6" fill="none" stroke-linecap="round"/>
-<path d="M194 188 Q210 198 224 204" stroke="#633806" stroke-width="6" fill="none" stroke-linecap="round"/>
-<ellipse cx="178" cy="92" rx="73" ry="58" fill="#3B6D11"/>
-<ellipse cx="156" cy="76" rx="52" ry="42" fill="#639922"/>
-<ellipse cx="200" cy="73" rx="50" ry="40" fill="#639922"/>
-<ellipse cx="178" cy="58" rx="58" ry="37" fill="#97C459"/>
-<rect x="118" y="120" width="44" height="8" fill="#854F0B" rx="4"/>
-<rect x="204" y="116" width="42" height="8" fill="#854F0B" rx="4"/>
-<circle cx="178" cy="106" r="14" fill="#FAC775"/>
-<rect x="165" y="120" width="26" height="24" fill="#D85A30" rx="6"/>
-<circle cx="172" cy="103" r="2.5" fill="#412402"/>
-<circle cx="184" cy="103" r="2.5" fill="#412402"/>
-<path d="M172 111 Q178 115 184 111" stroke="#412402" stroke-width="1.8" fill="none"/>
-<ellipse cx="52" cy="183" rx="15" ry="9" fill="#888780"/>
-<circle cx="52" cy="173" r="11" fill="#888780"/>
-<ellipse cx="82" cy="182" rx="14" ry="8" fill="#5F5E5A"/>
-<circle cx="82" cy="173" r="10" fill="#5F5E5A"/>
-<ellipse cx="298" cy="183" rx="14" ry="8" fill="#888780"/>
-<circle cx="298" cy="173" r="10" fill="#888780"/>
-<ellipse cx="326" cy="182" rx="13" ry="8" fill="#5F5E5A"/>
-<circle cx="326" cy="173" r="10" fill="#5F5E5A"/>
-<circle cx="248" cy="152" r="18" fill="#FAC775"/>
-<path d="M234 170 L226 220 L270 220 L262 170Z" fill="white"/>
-<path d="M228 152 Q248 136 268 152" fill="#C7A882"/>
-<line x1="262" y1="162" x2="290" y2="128" stroke="#FAC775" stroke-width="9" stroke-linecap="round"/>
-<line x1="290" y1="128" x2="294" y2="114" stroke="#FAC775" stroke-width="7" stroke-linecap="round"/>
-</svg>`,
-    paras:[
-      'V Jerichu žil výběrčí daní jménem Zacheus. Byl bohatý, ale nikdo ho neměl rád – výběrčí totiž lidi často podváděli. Zacheus byl navíc malý, skoro nejmenší člověk v celém městě.',
-      'Jednoho dne šel Jerichem Ježíš. Všichni ho chtěli vidět – celé město se sbíhalo k cestě. Ale Zacheus přes hlavy ostatních nic neviděl. Nevzdal to – vylezl na strom u cesty a čekal.',
-      'Když Ježíš přišel ke stromu, zastavil se, vzhlédl a řekl: „Zachee, pojď rychle dolů! Dnes musím zůstat v tvém domě." Zacheus slezl dolů úplně přešťastný. Lidé reptali: „Jak může jít Ježíš k takovému hříšníkovi?"',
-      'Ale Zacheus stál před Ježíšem a řekl: „Polovinu majetku dám chudým. Koho jsem podvedl, tomu vrátím čtyřnásobek." Ježíš se usmál: „Dnes přišla záchrana do tohoto domu." Ježíš přichází i k těm, od nichž to nikdo nečeká.'
-    ],
-    fact:'Strom, na který Zacheus vylezl, byl sykomorový fíkovník – může dorůst výšky až 15 metrů. To muselo být pěkně vysoko!',
-    question:'Je ve tvém životě něco, co bys chtěl/a napravit? Jak se asi Zacheus cítil po setkání s Ježíšem?'
-  },
-  {
-    id:'stvoreni', emoji:'🌍', title:'Stvoření světa', ref:'Genesis 1–2', color:'cpk',
-    svg:`<svg viewBox="0 0 360 220" xmlns="http://www.w3.org/2000/svg">
-<rect width="360" height="220" fill="#26215C"/>
-<circle cx="52" cy="32" r="2.5" fill="white"/>
-<circle cx="98" cy="50" r="1.5" fill="white" opacity=".8"/>
-<circle cx="145" cy="16" r="2" fill="white"/>
-<circle cx="188" cy="40" r="1.5" fill="white"/>
-<circle cx="232" cy="12" r="2.5" fill="white" opacity=".9"/>
-<circle cx="276" cy="46" r="1.5" fill="white" opacity=".8"/>
-<circle cx="342" cy="28" r="2" fill="white"/>
-<circle cx="68" cy="68" r="1" fill="white" opacity=".6"/>
-<circle cx="310" cy="62" r="1" fill="white" opacity=".6"/>
-<circle cx="168" cy="72" r="1.5" fill="white" opacity=".5"/>
-<circle cx="300" cy="26" r="1" fill="white" opacity=".7"/>
-<circle cx="22" cy="60" r="1.5" fill="white" opacity=".6"/>
-<circle cx="292" cy="72" r="38" fill="#FAC775" opacity=".2"/>
-<circle cx="292" cy="72" r="28" fill="#FAC775" opacity=".45"/>
-<circle cx="292" cy="72" r="18" fill="#EF9F27"/>
-<line x1="292" y1="36" x2="292" y2="28" stroke="#FAC775" stroke-width="3.5"/>
-<line x1="292" y1="108" x2="292" y2="116" stroke="#FAC775" stroke-width="3.5"/>
-<line x1="256" y1="72" x2="248" y2="72" stroke="#FAC775" stroke-width="3.5"/>
-<line x1="328" y1="72" x2="336" y2="72" stroke="#FAC775" stroke-width="3.5"/>
-<line x1="267" y1="47" x2="261" y2="41" stroke="#FAC775" stroke-width="3"/>
-<line x1="317" y1="97" x2="323" y2="103" stroke="#FAC775" stroke-width="3"/>
-<line x1="267" y1="97" x2="261" y2="103" stroke="#FAC775" stroke-width="3"/>
-<line x1="317" y1="47" x2="323" y2="41" stroke="#FAC775" stroke-width="3"/>
-<circle cx="62" cy="60" r="22" fill="#EEEDFE"/>
-<circle cx="72" cy="54" r="19" fill="#26215C"/>
-<ellipse cx="180" cy="188" rx="205" ry="58" fill="#378ADD"/>
-<ellipse cx="96" cy="194" rx="116" ry="48" fill="#3B6D11"/>
-<ellipse cx="264" cy="198" rx="95" ry="44" fill="#3B6D11"/>
-<ellipse cx="180" cy="184" rx="84" ry="38" fill="#639922"/>
-<rect x="86" y="146" width="8" height="32" fill="#412402" rx="3"/>
-<polygon points="90,146 74,114 106,114" fill="#3B6D11"/>
-<polygon points="90,132 78,105 102,105" fill="#639922"/>
-<rect x="248" y="150" width="8" height="28" fill="#412402" rx="3"/>
-<polygon points="252,150 236,118 268,118" fill="#3B6D11"/>
-<polygon points="252,136 240,110 264,110" fill="#639922"/>
-<path d="M136 90 Q144 82 152 90" stroke="white" stroke-width="2.5" fill="none"/>
-<path d="M160 102 Q167 94 174 102" stroke="white" stroke-width="2.5" fill="none"/>
-<path d="M180 0 L138 128" stroke="#FAC775" stroke-width="1.5" fill="none" opacity=".12"/>
-<path d="M180 0 L222 128" stroke="#FAC775" stroke-width="1.5" fill="none" opacity=".12"/>
-<path d="M180 0 L96 128" stroke="#FAC775" stroke-width="1" fill="none" opacity=".08"/>
-<path d="M180 0 L264 128" stroke="#FAC775" stroke-width="1" fill="none" opacity=".08"/>
-</svg>`,
-    paras:[
-      'Na úplném začátku nebylo nic – jen tma a prázdnota. A pak Bůh promluvil: „Buď světlo!" A světlo bylo. Bůh viděl, že je dobré. Nastal první den.',
-      'Bůh postupně tvořil dál. Oddělil vody a stvořil oblohu. Shromáždil moře a nechal vyrůst souš. Pokryl ji trávou, stromy a všemi druhy rostlin. Stvořil slunce, měsíc a hvězdy. Naplnil moře rybami a oblohu ptáky.',
-      'Šestého dne přišla na svět všechna suchozemská zvířata. A nakonec – jako vrchol celého stvoření – Bůh stvořil člověka. Stvořil ho ke svému obrazu a vdechl mu život.',
-      'Sedmého dne Bůh odpočinul. Podíval se na vše, co stvořil – a bylo to velmi dobré. Tento svět, příroda, zvířata, hvězdy i ty sám/sama – to vše je Boží dílo. A je to krásné.'
-    ],
-    fact:'Slovo „Genesis" pochází z řečtiny a znamená „počátek" nebo „vznik". Je to první kniha celé Bible.',
-    question:'Co se ti z Božího stvoření líbí nejvíc? Proč myslíš, že Bůh stvořil člověka jako poslední ze všeho?'
-  }
-];
-
-function showList(){
-  document.getElementById('list-view').style.display='';
-  document.getElementById('story-view').style.display='none';
-  window.scrollTo({top:0,behavior:'instant'});
+function showStory(id) {
+  document.getElementById('list-view').style.display = 'none';
+  document.getElementById('story-' + id).style.display = 'block';
+  window.scrollTo(0, 0);
 }
-
-function showStory(id){
-  const s=stories.find(x=>x.id===id);
-  if(!s)return;
-  const sv=document.getElementById('story-view');
-  sv.innerHTML=buildStory(s);
-  document.getElementById('list-view').style.display='none';
-  sv.style.display='';
-  window.scrollTo({top:0,behavior:'instant'});
+function showList() {
+  var all = document.querySelectorAll('.story-detail');
+  for (var i = 0; i < all.length; i++) { all[i].style.display = 'none'; }
+  document.getElementById('list-view').style.display = 'block';
+  window.scrollTo(0, 0);
 }
-
-function buildStory(s){
-  return `
-<header class="hdr">
-  <button class="back-btn" onclick="showList()">← Zpět</button>
-  <div class="hdr-text"><h1>${s.title}</h1><p>${s.ref}</p></div>
-</header>
-<div class="story-illo">${s.svg}</div>
-<div class="story-body">
-  <span class="story-ref-label">${s.ref}</span>
-  <h2 class="story-title">${s.title}</h2>
-  ${s.paras.map(p=>`<p class="story-para">${p}</p>`).join('')}
-  <div class="fact-box">
-    <div class="fact-label">💡 Věděl/a jsi?</div>
-    <p class="fact-text">${s.fact}</p>
-  </div>
-  <div class="q-box">
-    <div class="q-label">💭 Zamysli se</div>
-    <p class="q-text">${s.question}</p>
-  </div>
-</div>`;
-}
-
-window.addEventListener('DOMContentLoaded',()=>{
-  const grid=document.getElementById('story-grid');
-  grid.innerHTML=stories.map(s=>`
-<button class="scard ${s.color}" onclick="showStory('${s.id}')">
-  <span class="scard-ico">${s.emoji}</span>
-  <span class="scard-name">${s.title}</span>
-  <span class="scard-ref">${s.ref}</span>
-</button>`).join('');
-});
 </script>
 </body>
 </html>
