@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kvízárna – Tichý koutek</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:#F5F0E8;font-family:'Nunito',sans-serif;max-width:640px;margin:0 auto;min-height:100dvh}
+.hdr{background:#3C3489;padding:1.5rem 1.1rem 1.4rem;display:flex;align-items:center;gap:.9rem;border-radius:0 0 22px 22px}
+.back-btn{background:rgba(255,255,255,.15);border:none;color:#EEEDFE;font-family:'Nunito',sans-serif;font-size:14px;font-weight:700;padding:8px 13px;border-radius:12px;cursor:pointer;flex-shrink:0}
+.back-btn:active{background:rgba(255,255,255,.28)}
+.hdr-text h1{font-family:'Lora',serif;font-size:21px;font-weight:600;color:#EEEDFE}
+.hdr-text p{font-size:11px;color:#AFA9EC;margin-top:2px}
+
+/* START */
+#start-view{padding:1.5rem 1rem 2rem}
+.start-card{background:white;border-radius:20px;padding:1.5rem 1.2rem;text-align:center;border:1.5px solid #E6E2DA}
+.start-ico{font-size:52px;margin-bottom:.8rem}
+.start-title{font-family:'Lora',serif;font-size:22px;color:#26215C;margin-bottom:.5rem}
+.start-desc{font-size:15px;color:#633806;line-height:1.6;margin-bottom:1.4rem}
+.start-btn{background:#3C3489;color:#EEEDFE;border:none;font-family:'Nunito',sans-serif;font-size:16px;font-weight:800;padding:14px 0;border-radius:16px;width:100%;cursor:pointer;transition:background .15s}
+.start-btn:active{background:#26215C}
+
+/* QUIZ */
+#quiz-view{display:none;padding:1rem 1rem 2rem}
+.progress-row{display:flex;align-items:center;gap:10px;margin-bottom:1rem}
+.progress-bar{flex:1;height:8px;background:#D3D1C7;border-radius:4px;overflow:hidden}
+.progress-fill{height:100%;background:#3C3489;border-radius:4px;transition:width .3s}
+.progress-label{font-size:13px;font-weight:700;color:#633806;white-space:nowrap}
+.score-badge{background:#EEEDFE;border-radius:12px;padding:4px 10px;font-size:13px;font-weight:800;color:#26215C}
+
+.q-card{background:white;border-radius:20px;padding:1.3rem 1.1rem 1.1rem;border:1.5px solid #E6E2DA;margin-bottom:.9rem}
+.q-tag{font-size:10px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:#AFA9EC;margin-bottom:.5rem;display:block}
+.q-text{font-family:'Lora',serif;font-size:19px;font-weight:600;color:#26215C;line-height:1.4}
+
+.answers{display:flex;flex-direction:column;gap:9px;margin-bottom:.9rem}
+.ans-btn{background:#F5F0E8;border:2px solid transparent;border-radius:14px;padding:13px 14px;font-family:'Nunito',sans-serif;font-size:15px;font-weight:700;color:#26215C;text-align:left;cursor:pointer;transition:all .15s;line-height:1.3}
+.ans-btn:active{transform:scale(.97)}
+.ans-btn.correct{background:#E1F5EE;border-color:#1D9E75;color:#085041}
+.ans-btn.wrong{background:#FAECE7;border-color:#D85A30;color:#4A1B0C}
+.ans-btn.dimmed{opacity:.45}
+
+.explain-box{background:#FAEEDA;border-radius:14px;padding:1rem 1rem;display:none}
+.explain-icon{font-size:18px;margin-bottom:4px;display:block}
+.explain-text{font-size:14px;color:#633806;line-height:1.6;font-weight:600}
+
+.next-btn{background:#3C3489;color:#EEEDFE;border:none;font-family:'Nunito',sans-serif;font-size:15px;font-weight:800;padding:13px 0;border-radius:14px;width:100%;cursor:pointer;display:none;margin-top:.7rem;transition:background .15s}
+.next-btn:active{background:#26215C}
+
+/* RESULT */
+#result-view{display:none;padding:1.5rem 1rem 2rem}
+.result-card{background:white;border-radius:20px;padding:1.8rem 1.2rem;text-align:center;border:1.5px solid #E6E2DA}
+.result-ico{font-size:56px;margin-bottom:.6rem}
+.result-title{font-family:'Lora',serif;font-size:24px;color:#26215C;margin-bottom:.4rem}
+.result-score{font-size:48px;font-weight:800;color:#3C3489;margin:.4rem 0}
+.result-max{font-size:16px;color:#AFA9EC;margin-bottom:.4rem}
+.result-msg{font-size:15px;color:#633806;line-height:1.6;margin-bottom:1.4rem}
+.result-btn{background:#3C3489;color:#EEEDFE;border:none;font-family:'Nunito',sans-serif;font-size:16px;font-weight:800;padding:14px 0;border-radius:16px;width:100%;cursor:pointer;margin-bottom:.7rem}
+.result-btn:active{background:#26215C}
+.result-btn2{background:#F5F0E8;color:#26215C;border:none;font-family:'Nunito',sans-serif;font-size:15px;font-weight:700;padding:12px 0;border-radius:14px;width:100%;cursor:pointer}
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <a href="index.html" class="back-btn">← Zpět</a>
+  <div class="hdr-text"><h1>Kvízárna</h1><p id="hdr-sub">Otázky ze Slova Božího</p></div>
+</header>
+
+<!-- START -->
+<div id="start-view">
+  <div style="height:1.2rem"></div>
+  <div class="start-card">
+    <div class="start-ico">💡</div>
+    <h2 class="start-title">Kvízárna</h2>
+    <p class="start-desc">Víš, kdo byl Jonáš? Nebo co říkal Ježíš o ztraceném synu? Odpovídej potichu sám pro sebe — každá otázka má tři možnosti. Uvidíš, co všechno znáš!</p>
+    <button class="start-btn" onclick="startQuiz()">▶ Začít kvíz</button>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div id="quiz-view">
+  <div class="progress-row">
+    <div class="progress-bar"><div class="progress-fill" id="prog-fill"></div></div>
+    <span class="progress-label" id="prog-label">1 / 20</span>
+    <span class="score-badge" id="score-badge">✓ 0</span>
+  </div>
+  <div class="q-card">
+    <span class="q-tag" id="q-tag">Starý zákon</span>
+    <p class="q-text" id="q-text">Otázka</p>
+  </div>
+  <div class="answers" id="answers"></div>
+  <div class="explain-box" id="explain-box">
+    <span class="explain-icon" id="explain-icon">💡</span>
+    <p class="explain-text" id="explain-text"></p>
+  </div>
+  <button class="next-btn" id="next-btn" onclick="nextQuestion()">Další otázka →</button>
+</div>
+
+<!-- RESULT -->
+<div id="result-view">
+  <div style="height:1.2rem"></div>
+  <div class="result-card">
+    <div class="result-ico" id="result-ico">🎉</div>
+    <h2 class="result-title" id="result-title">Výborně!</h2>
+    <div class="result-score" id="result-score">18</div>
+    <div class="result-max" id="result-max">z 20 správně</div>
+    <p class="result-msg" id="result-msg">Skvělé! Znáš Bibli opravdu dobře.</p>
+    <button class="result-btn" onclick="startQuiz()">▶ Hrát znovu</button>
+    <button class="result-btn2" onclick="location.href='index.html'">← Zpět do koutku</button>
+  </div>
+</div>
+
+<script>
+var ALL_QUESTIONS = [
+  /* ═══ STARÝ ZÁKON — PŘÍBĚHY ═══ */
+  {tag:'Starý zákon', q:'Jak se jmenoval muž, který postavil velkou archu?', a:['Noe','Abrahám','Mojžíš'], ok:0, exp:'Bůh řekl Noemu, aby postavil archu, protože přijde velká povodeň. Noe poslechl a zachránil svou rodinu i zvířata.'},
+  {tag:'Starý zákon', q:'Kolik dní a nocí pršelo za Noeovy doby?', a:['Čtyřicet','Sedm','Sto'], ok:0, exp:'Pršelo přesně čtyřicet dní a čtyřicet nocí. Číslo čtyřicet se v Bibli objevuje mnohokrát jako symbol zkoušky.'},
+  {tag:'Starý zákon', q:'Co dal Bůh Noemu jako znamení svého slibu?', a:['Duhu','Hvězdu','Holubici'], ok:0, exp:'Bůh umístil na oblohu duhu jako znamení svého slibu — nikdy více nezahubí zemi potopou.'},
+  {tag:'Starý zákon', q:'Kdo byl první člověk podle Bible?', a:['Adam','Noe','Abrahám'], ok:0, exp:'Adam byl první člověk. Bůh ho stvořil ze země a vdechl mu život. Jméno Adam v hebrejštině znamená „člověk" nebo „zemina".'},
+  {tag:'Starý zákon', q:'Z čeho Bůh stvořil Evu?', a:['Z Adamova žebra','Z hlíny','Z vody'], ok:0, exp:'Bůh vzal Adamovo žebro a stvořil z něj Evu, aby Adam nebyl sám. Byl to Boží dar — společenství.'},
+  {tag:'Starý zákon', q:'Jak se jmenovala zahrada, ve které žili Adam a Eva?', a:['Eden','Ninive','Kanán'], ok:0, exp:'Zahrada Eden byla krásné místo, kde žili Adam a Eva. Mohli jíst ze všech stromů — kromě jednoho.'},
+  {tag:'Starý zákon', q:'Co slíbil Bůh Abrahámovi?', a:['Že bude otcem velkého národa','Že bude králem','Že dostane velkou archu'], ok:0, exp:'Bůh slíbil Abrahámovi, že z něj vzejde velký národ a že všechny národy světa budou skrze něj požehnány.'},
+  {tag:'Starý zákon', q:'Jak se jmenoval Abrahámův syn, kterého mu slíbil Bůh?', a:['Izák','Izmael','Jákob'], ok:0, exp:'Izák se narodil Abrahámovi a Sáře ve vysokém věku — byl to zázrak. Jméno Izák znamená „smích", protože se Sára zasmála, když to uslyšela.'},
+  {tag:'Starý zákon', q:'Jak se jmenoval Jákobův syn, kterého jeho bratři prodali do otroctví?', a:['Josef','Benjamin','Rúben'], ok:0, exp:'Josef byl Jákobův oblíbený syn. Bratři ho ze žárlivosti prodali obchodníkům. Bůh ho ale neopustil a Josef se stal důležitým úředníkem v Egyptě.'},
+  {tag:'Starý zákon', q:'Co uměl Josef vysvětlovat?', a:['Sny','Hvězdy','Zákony'], ok:0, exp:'Bůh dal Josefovi dar vykládat sny. Díky tomu mohl varovat faraona před sedmi lety hladu a zachránit celý Egypt.'},
+  {tag:'Starý zákon', q:'Kdo vyvedl Izraelity z Egypta?', a:['Mojžíš','Josue','David'], ok:0, exp:'Mojžíš byl povolán Bohem u hořícího keře. Vedl Izraelity z egyptského otroctví do svobody — tento odchod se nazývá Exodus.'},
+  {tag:'Starý zákon', q:'Co se stalo s Rudým mořem, když k němu Mojžíš přišel s Izraelity?', a:['Vody se rozestoupily','Zamrzlo','Vysychlo'], ok:0, exp:'Bůh rozdělil vody Rudého moře. Izraelité prošli po suché zemi a egyptská vojska, která je pronásledovala, se utopila.'},
+  {tag:'Starý zákon', q:'Kde Bůh dal Mojžíšovi Deset přikázání?', a:['Na hoře Sinaj','V Jeruzalémě','Na hoře Ararat'], ok:0, exp:'Bůh zavolal Mojžíše na horu Sinaj a dal mu Deset přikázání vytesaná do kamenných desek.'},
+  {tag:'Starý zákon', q:'Co jedli Izraelité na poušti, co jim Bůh posílal z nebe?', a:['Manu','Křepelky','Ovoce'], ok:0, exp:'Mana byl zvláštní pokrm, který Bůh posílal každé ráno. Chutnal jako medový chléb. Pršela z nebe čtyřicet let.'},
+  {tag:'Starý zákon', q:'Kolik přikázání dal Bůh Mojžíšovi?', a:['Deset','Sedm','Dvanáct'], ok:0, exp:'Deset přikázání — Desatero. Jsou základem Božího zákona a učí nás, jak milovat Boha a jak jednat s lidmi.'},
+  {tag:'Starý zákon', q:'Jak se jmenoval mladý pastýř, který porazil obra Goliáše?', a:['David','Samson','Jozue'], ok:0, exp:'David byl mladý pastýř, nejmladší z osmi bratrů. S Boží pomocí porazil obřího válečníka Goliáše jediným kamenem z praku.'},
+  {tag:'Starý zákon', q:'Čím David bojoval proti Goliášovi?', a:['Prakem a kamenem','Mečem','Lukem'], ok:0, exp:'David si vybral pět hladkých kamenů z potoka. Jedním kamenem z praku zasáhl Goliáše do čela a obr padl.'},
+  {tag:'Starý zákon', q:'Kdo byl Davidův nejlepší přítel?', a:['Jónatan','Samson','Eljáš'], ok:0, exp:'Jónatan, syn krále Saula, byl Davidovým nejlepším přítelem. Jejich přátelství je v Bibli příkladem opravdové věrnosti.'},
+  {tag:'Starý zákon', q:'Jaký nástroj hrál David?', a:['Harfu','Loutnu','Trubku'], ok:0, exp:'David hrál na harfu a skládal písně — Žalmy. Mnoho žalmů v Bibli napsal právě on. Hrou na harfu uklidňoval krále Saula.'},
+  {tag:'Starý zákon', q:'Jak se jmenoval král, který byl proslulý svou moudrostí?', a:['Šalomoun','David','Saul'], ok:0, exp:'Šalomoun, Davidův syn, byl nejznámější svou moudrostí. Bůh mu nabídl cokoliv — a on si vybral moudrost, ne bohatství.'},
+  {tag:'Starý zákon', q:'Co stavěl král Šalomoun v Jeruzalémě?', a:['Chrám','Palác','Přístav'], ok:0, exp:'Šalomoun postavil nádherný chrám v Jeruzalémě — místo, kde přebývala Boží přítomnost. Stavba trvala sedm let.'},
+  {tag:'Starý zákon', q:'Kdo byl pohlcen velkou rybou?', a:['Jonáš','Eljáš','Ezechiel'], ok:0, exp:'Jonáš utíkal před Božím úkolem, ale Bůh ho nenechal ujít. Ryba ho spolkla a po třech dnech vyvrhla zpět na suché zemi.'},
+  {tag:'Starý zákon', q:'Kam měl Jonáš jít, ale nejdříve utekl?', a:['Do Ninive','Do Babylonu','Do Egypta'], ok:0, exp:'Bůh poslal Jonáše do Ninive, aby tamním lidem řekl o jejich špatném chování. Jonáš se ale bál a nasedl na loď opačným směrem.'},
+  {tag:'Starý zákon', q:'Kdo byl uvržen do jámy se lvy a přežil?', a:['Daniel','Jonáš','Josef'], ok:0, exp:'Daniel odmítl přestat se modlit a byl hozen do jámy se lvy. Bůh poslal anděla, který lvům zavřel tlamy. Daniel přežil bez zranění.'},
+  {tag:'Starý zákon', q:'Kdo byl silák, jehož síla tkvěla ve vlasech?', a:['Samson','Goliáš','David'], ok:0, exp:'Samson dostal od Boha nadlidskou sílu. Tajemstvím bylo, že si nikdy nestříhal vlasy — to byl závazek jeho zasvěcení Bohu.'},
+  {tag:'Starý zákon', q:'Jak se jmenoval prorok, který byl vzat do nebe na ohnivém voze?', a:['Eljáš','Elizeus','Izaiáš'], ok:0, exp:'Eljáš byl jeden z největších proroků. Bůh ho vzal do nebe živého — přijel pro něj ohnivý vůz s ohnivými koňmi.'},
+  {tag:'Starý zákon', q:'Jak se jmenovala Rút věrná snacha, které zůstala po smrti manžela?', a:['Noemi','Debora','Ráchel'], ok:0, exp:'Noemi byla Rútina tchyně. Rút se odmítla vrátit k vlastnímu národu a řekla slavná slova: „Kamkoli půjdeš, půjdu i já."'},
+  {tag:'Starý zákon', q:'Kdo byl první izraelský král?', a:['Saul','David','Šalomoun'], ok:0, exp:'Saul byl pomazán za prvního krále Izraele. Zpočátku byl pokorný, ale později Boha neposlouchal a přišel o jeho přízeň.'},
+  {tag:'Starý zákon', q:'Kde se narodil Ježíš?', a:['V Betlémě','V Nazaretu','V Jeruzalémě'], ok:0, exp:'Ježíš se narodil v Betlémě, jak předpověděli proroci. Maria a Josef nenašli místo v hospodě, proto Ježíš ležel v jeslích.'},
+  {tag:'Starý zákon', q:'Kdo přinesl zprávu Marii, že bude mít syna?', a:['Anděl Gabriel','Anděl Michael','Prorok Izaiáš'], ok:0, exp:'Anděl Gabriel přišel za Marií a oznámil jí, že porodí syna a dá mu jméno Ježíš. Maria přijala tuto zprávu s vírou.'},
+
+  /* ═══ NOVÝ ZÁKON — JEŽÍŠ ═══ */
+  {tag:'Nový zákon', q:'Jak se jmenoval Ježíšův pozemský otec?', a:['Josef','Jan','Zachariáš'], ok:0, exp:'Josef byl tesař z Nazaretu. Vzal Marii za ženu a vychoval Ježíše jako svého syna, i když věděl, že je to Boží Syn.'},
+  {tag:'Nový zákon', q:'Kdo křtil Ježíše v řece Jordán?', a:['Jan Křtitel','Petr','Ondřej'], ok:0, exp:'Jan Křtitel křtil lidi v řece Jordán. Když přišel Ježíš, Jan řekl: „To já bych měl být pokřtěn od tebe." Ale Ježíš trval na křtu.'},
+  {tag:'Nový zákon', q:'Kolik učedníků si Ježíš vybral?', a:['Dvanáct','Sedm','Sedmdesát'], ok:0, exp:'Ježíš si vyvolil dvanáct učedníků — apoštoly. Číslo dvanáct odkazuje na dvanáct kmenů Izraele.'},
+  {tag:'Nový zákon', q:'Jak se jmenoval učedník, který Ježíše zradil?', a:['Jidáš Iškariotský','Tomáš','Šimon'], ok:0, exp:'Jidáš Iškariotský zradil Ježíše za třicet stříbrných. Ukázal vojákům, kdo je Ježíš, políbením — to byl domluvený signál.'},
+  {tag:'Nový zákon', q:'Jak se jmenoval učedník, který třikrát zapřel Ježíše?', a:['Petr','Jan','Jakub'], ok:0, exp:'Petr třikrát řekl, že Ježíše nezná — přesně tak, jak Ježíš předpověděl. Petr pak hořce plakal. Ale Ježíš mu odpustil a pověřil ho pastýřstvím.'},
+  {tag:'Nový zákon', q:'Jaký byl první Ježíšův zázrak?', a:['Proměnění vody ve víno','Uzdravení slepého','Nakrmení pěti tisíc'], ok:0, exp:'Na svatbě v Káni Galilejské došlo víno. Maria řekla Ježíšovi o problému a on proměnil vodu ve víno — to byl jeho první zázrak.'},
+  {tag:'Nový zákon', q:'Kolika lidmi Ježíš nasytil pět chlebů a dvě ryby?', a:['Pěti tisíci','Tisícem','Deseti tisíci'], ok:0, exp:'Ježíš vzal pět chlebů a dvě ryby, poděkoval Bohu a rozděloval — a všech pět tisíc mužů (plus ženy a děti) se nasytilo, ještě zbylo dvanáct košů.'},
+  {tag:'Nový zákon', q:'Po čem Ježíš chodil?', a:['Po vodě','Po oblacích','Po písku'], ok:0, exp:'Ježíš přišel k učedníkům v noci — kráčel po hladině jezera. Petr si také chtěl zkusit chodit po vodě. Chvíli se mu to dařilo, ale pak se zalekl.'},
+  {tag:'Nový zákon', q:'Koho Ježíš vzkřísil z mrtvých jako přítele?', a:['Lazara','Petra','Zachea'], ok:0, exp:'Lazar byl Ježíšův přítel. Když zemřel, Ježíš přišel a zavolal ho ze hrobu: „Lazare, pojď ven!" A Lazar vstal a vyšel.'},
+  {tag:'Nový zákon', q:'Jak se jmenoval malý výběrčí daní, který vylezl na strom?', a:['Zacheus','Levi','Natanael'], ok:0, exp:'Zacheus byl malé postavy, a tak vylezl na fíkovník, aby Ježíše viděl. Ježíš se zastavil a řekl: „Zachee, dnes půjdu do tvého domu."'},
+  {tag:'Nový zákon', q:'Co Ježíš řekl, že je „světlo světa"?', a:['Sám sebe','Slunce','Svíci'], ok:0, exp:'Ježíš řekl: „Já jsem světlo světa. Kdo mě následuje, nebude chodit ve tmě." Tím myslel duchovní světlo — pravdu a život.'},
+  {tag:'Nový zákon', q:'Jak Ježíš učil své učedníky modlit se?', a:['Dal jim Otčenáš','Řekl jim, aby se nemodlili nahlas','Ukázal jim chrám'], ok:0, exp:'Ježíš učedníkům dal vzor modlitby — Otčenáš, začínající slovy „Otče náš, jenž jsi na nebesích". Je to nejznámější křesťanská modlitba.'},
+  {tag:'Nový zákon', q:'Na jakém zvířeti Ježíš vjel do Jeruzaléma?', a:['Na oslíku','Na koni','Pěšky'], ok:0, exp:'Ježíš vjel do Jeruzaléma na oslíku — to byl záměr. Proroci předpověděli, že přijde král na oslovi, ne na válečném koni — v pokoře, ne v síle.'},
+  {tag:'Nový zákon', q:'Kde se Ježíš modlil noc před svým zatčením?', a:['V Getsemane','V chrámu','V Betlémě'], ok:0, exp:'Ježíš šel se svými učedníky do zahrady Getsemane. Modlil se tak vroucně, že mu z čela kanul pot jako krůpěje krve.'},
+  {tag:'Nový zákon', q:'Co Ježíš řekl na kříži jednomu ze dvou zločinců?', a:['„Dnes budeš se mnou v ráji"','„Tvé hříchy jsou odpuštěny"','„Proč mě opustil?"'], ok:0, exp:'Jeden ze zločinců na kříži věřil v Ježíše a prosil ho o milosrdenství. Ježíš mu odpověděl: „Dnes budeš se mnou v ráji."'},
+  {tag:'Nový zákon', q:'Co se stalo třetí den po Ježíšově smrti?', a:['Vstal z mrtvých','Byl pohřben','Přišli učedníci'], ok:0, exp:'Třetí den Ježíš vstal z mrtvých — to je samý základ křesťanské víry. Prázdný hrob a setkání se vzkříšeným Ježíšem změnily svět.'},
+  {tag:'Nový zákon', q:'Kdo jako první přišel k prázdnému hrobu?', a:['Marie z Magdaly','Petr','Jan'], ok:0, exp:'Marie z Magdaly přišla brzy ráno k hrobu. Zjistila, že kámen je odvalený a hrob prázdný. Jako první se setkala se vzkříšeným Ježíšem.'},
+  {tag:'Nový zákon', q:'Kam Ježíš odešel čtyřicet dní po vzkříšení?', a:['Na nebe','Do Galileje','Do Egypta'], ok:0, exp:'Ježíš se čtyřicet dní zjevoval učedníkům a pak byl vzat do nebe — to se nazývá Nanebevstoupení. Slíbil, že přijde znovu.'},
+
+  /* ═══ PODOBENSTVÍ ═══ */
+  {tag:'Podobenství', q:'V Ježíšově podobenství — kolik ovcí měl pastýř a kolik se ztratilo?', a:['Sto ovcí, ztratila se jedna','Deset ovcí, ztratily se tři','Padesát ovcí, ztratily se dvě'], ok:0, exp:'Pastýř měl sto ovcí. Když se jedna ztratila, nechal devětadevadesát a šel hledat tu jednu — dokud ji nenašel. Tak Bůh hledá každého z nás.'},
+  {tag:'Podobenství', q:'V podobenství o marnotratném synu — kam utekl mladší syn?', a:['Do daleké země','Do Egypta','Do chrámu'], ok:0, exp:'Mladší syn vzal svůj díl majetku a odešel do daleké země, kde vše prohýřil. Skončil jako pasák vepřů a teprve tehdy si vzpomněl na otce.'},
+  {tag:'Podobenství', q:'Co udělal otec v podobenství, když uviděl vracejícího se syna?', a:['Rozběhl se mu naproti','Čekal doma','Nejdřív se rozzlobil'], ok:0, exp:'Otec ho uviděl z dálky a rozběhl se mu naproti — to byl v té době neobyčejný čin pro staršího muže. Objal ho a uspořádal hostinu.'},
+  {tag:'Podobenství', q:'Na co Ježíš přirovnal Boží království v podobenství o hořčičném zrnu?', a:['K malému semínku, které vyroste ve velký strom','K poli plném pšenice','K vzácné perle'], ok:0, exp:'Hořčičné zrno je jedno z nejmenších semen, ale vyroste ve velký keř. Tak i Boží království začíná malé, ale roste do velikosti.'},
+  {tag:'Podobenství', q:'Kdo v podobenství pomohl zraněnému muži na cestě z Jeruzaléma?', a:['Samaritán','Kněz','Levita'], ok:0, exp:'Kněz ani levita zraněnému nepomohli. Pomohl Samaritán — člen národa, se kterým Židé nevycházeli. Proto říkáme „milosrdný Samaritán".'},
+  {tag:'Podobenství', q:'V podobenství o deseti pannách — kolik z nich bylo připravených?', a:['Pět','Tři','Sedm'], ok:0, exp:'Pět panen bylo moudrých — vzaly olej do lamp. Pět bylo pošetilých — zapomněly na olej. Kdo byl připraven, šel na hostinu.'},
+  {tag:'Podobenství', q:'V podobenství o rozsévači — co se stalo se semenem, které padlo na dobrou půdu?', a:['Přineslo hojnou úrodu','Uschlo','Sezobali ho ptáci'], ok:0, exp:'Semeno na dobré půdě vzešlo a přineslo úrodu — třicetinásobnou, šedesátinásobnou, nebo stonásobnou. Dobrá půda je srdce, které přijímá Boží slovo.'},
+  {tag:'Podobenství', q:'Co říká Ježíšovo podobenství o pokladu skrytém v poli?', a:['Boží království stojí za vše, co máme','Poklady patří králi','Najdi poklad a sdílej ho'], ok:0, exp:'Člověk našel v poli skrytý poklad, šel, prodal vše co měl a koupil to pole. Tak je Boží království — za to stojí vydat vše.'},
+
+  /* ═══ MODLITBY A VÍRA ═══ */
+  {tag:'Modlitby a víra', q:'Jak začíná modlitba Otčenáš?', a:['„Otče náš, jenž jsi na nebesích"','„Bože, slyš můj hlas"','„Pane, přijď a pomoz mi"'], ok:0, exp:'Ježíš nás naučil začínat modlitbu oslovením „Otče náš" — tím nám říká, že Bůh je jako milující otec, ke kterému smíme kdykoli přijít.'},
+  {tag:'Modlitby a víra', q:'Co říká asi nejznámější verš Bible — Jan 3,16?', a:['Že Bůh tak miloval svět, že dal svého Syna','Že Bůh stvořil nebe a zemi','Že Ježíš vstal z mrtvých'], ok:0, exp:'Jan 3,16: „Neboť Bůh tak miloval svět, že dal svého jednorozeného Syna, aby žádný, kdo v něho věří, nezahynul, ale měl věčný život."'},
+  {tag:'Modlitby a víra', q:'Jak se jmenuje 23. žalm, který začíná „Hospodin je můj pastýř"?', a:['Žalm pastýře','Žalm lásky','Žalm chvály'], ok:0, exp:'Žalm 23 napsal David a je jedním z nejkrásnějších. Říká: „Hospodin je můj pastýř, nebudu mít nedostatku." Vyjadřuje plnou důvěru v Boží péči.'},
+  {tag:'Modlitby a víra', q:'Co Ježíš říká o modlitbě v tichosti?', a:['Jdi do svého pokoje a zavři dveře','Modli se jen v chrámu','Modli se nahlas, aby tě všichni slyšeli'], ok:0, exp:'Ježíš učil, že modlitba nemusí být okázalá. Řekl: jdi do svého pokoje, zavři dveře a modli se k Otci, který vidí i to, co je skryté.'},
+  {tag:'Modlitby a víra', q:'Co Ježíš říká, že se stane, když budeme hledat?', a:['Nalezneme','Budeme zklamáni','Musíme hledat sami'], ok:0, exp:'Ježíš slíbil: „Proste a bude vám dáno, hledejte a naleznete, tlučte a bude vám otevřeno." Bůh slyší a odpovídá.'},
+  {tag:'Modlitby a víra', q:'Co Ježíš říká o víře velikosti hořčičného zrna?', a:['Může přemístit horu','Nestačí to','Je zbytečná'], ok:0, exp:'Ježíš řekl, že i víra malá jako hořčičné zrno může přemístit horu. Nejde o množství víry, ale o to, komu věříme.'},
+
+  /* ═══ BIBLE — FAKTA ═══ */
+  {tag:'O Bibli', q:'Co znamená slovo „Bible"?', a:['Knihy','Slovo Boží','Písmo'], ok:0, exp:'Bible pochází z řeckého slova „biblia", což znamená „knihy". Bible je sbírka mnoha knih — 66 nebo 73 podle různých tradic.'},
+  {tag:'O Bibli', q:'Na jaké dvě části se Bible dělí?', a:['Starý a Nový zákon','První a druhá Bible','Zákon a evangelium'], ok:0, exp:'Bible se dělí na Starý zákon (před Ježíšem) a Nový zákon (od Ježíše). Obě části k sobě patří a navzájem se doplňují.'},
+  {tag:'O Bibli', q:'Jak se nazývá první kniha Bible?', a:['Genesis','Exodus','Žalmy'], ok:0, exp:'Genesis je první kniha Bible a začíná slovy: „Na počátku stvořil Bůh nebe a zemi." Popisuje stvoření světa a začátky lidstva.'},
+  {tag:'O Bibli', q:'Jak se nazývají první čtyři knihy Nového zákona?', a:['Evangelia','Listy','Žalmy'], ok:0, exp:'Matouš, Marek, Lukáš a Jan — čtyři evangelia. Každé popisuje Ježíšův život, smrt a vzkříšení z trochu jiného úhlu pohledu.'},
+  {tag:'O Bibli', q:'Kdo napsal většinu listů v Novém zákoně?', a:['Pavel','Petr','Jan'], ok:0, exp:'Apoštol Pavel napsal třináct listů (epišt) různým církvím a osobám. Jsou to Římanům, Korintským, Galatským... plné rady a učení.'},
+  {tag:'O Bibli', q:'Jak se jmenuje poslední kniha Bible?', a:['Zjevení Janovo','Skutky apoštolů','Judův list'], ok:0, exp:'Zjevení Janovo (Apokalypsa) je poslední kniha Bible. Jan ji napsal na ostrově Patmos a popisuje vidění o konci věků a Božím vítězství.'},
+  {tag:'O Bibli', q:'V jakém jazyce byl původně napsán Nový zákon?', a:['Řecky','Latinsky','Hebrejsky'], ok:0, exp:'Nový zákon byl napsán v řečtině — tehdy to byl jazyk, kterému rozuměli lidé po celém Středomoří. Starý zákon byl napsán převážně hebrejsky.'},
+  {tag:'O Bibli', q:'Jak se nazývají krátké básně modliteb v Bibli?', a:['Žalmy','Přísloví','Skutky'], ok:0, exp:'Žalmy jsou sbírka 150 básní a modliteb. Vyjadřují radost i smutek, chválu i nářek. Mnohé napsal král David.'},
+
+  /* ═══ APOŠTOLOVÉ ═══ */
+  {tag:'Apoštolové', q:'Jaké povolání měl Petr před tím, než ho Ježíš povolal?', a:['Rybář','Tesař','Výběrčí daní'], ok:0, exp:'Petr byl rybář na Galilejském jezeře. Ježíš mu řekl: „Pojď za mnou a učiním tě rybářem lidí." Petr okamžitě zanechal sítí a šel.'},
+  {tag:'Apoštolové', q:'Jak se jmenoval apoštol, který nejprve nevěřil ve vzkříšení Ježíše?', a:['Tomáš','Petr','Jan'], ok:0, exp:'Tomáš nebyl přítomen, když se Ježíš poprvé zjevil učedníkům. Řekl: „Dokud neuvidím rány po hřebech, neuvěřím." O týden později se Ježíš zjevil znovu a Tomáš uvěřil.'},
+  {tag:'Apoštolové', q:'Jaké povolání měl Matouš před tím, než se stal apoštolem?', a:['Výběrčí daní','Rybář','Kněz'], ok:0, exp:'Matouš (Levi) vybíral daně — povolání, které ostatní Židé nenáviděli. Ale Ježíš si ho vyvolil a Matouš napsal jedno z evangelií.'},
+  {tag:'Apoštolové', q:'Kdo byl nejdříve velkým pronásledovatelem křesťanů, a pak se stal apoštolem?', a:['Pavel','Petr','Barnabáš'], ok:0, exp:'Pavel (původně Saul) aktivně pronásledoval křesťany. Na cestě do Damašku ho oslnilo světlo a on uslyšel Ježíšův hlas. Obrátil se a stal se největším misionářem.'},
+  {tag:'Apoštolové', q:'Na jaký svátek sestoupil Duch svatý na učedníky?', a:['O Letnicích (Pintecoste)','O Vánocích','O Velikonocích'], ok:0, exp:'O Letnicích (50 dní po Velikonocích) sestoupil Duch svatý na učedníky jako ohnivé jazyky. Začala se rodit církev.'},
+
+  /* ═══ STVOŘENÍ A PŘÍRODA ═══ */
+  {tag:'Stvoření', q:'Kolik dní trvalo stvoření světa?', a:['Šest dní, sedmý Bůh odpočinul','Sedm dní','Čtyřicet dní'], ok:0, exp:'Bůh tvořil šest dní a sedmý den odpočinul. Proto je sedmý den — sobota (nebo neděle pro křesťany) dnem odpočinku a bohoslužby.'},
+  {tag:'Stvoření', q:'Co Bůh stvořil první den?', a:['Světlo','Oblohu','Zvířata'], ok:0, exp:'První Boží slovo bylo: „Buď světlo!" A světlo bylo. Bůh viděl, že je dobré — a oddělil světlo od tmy.'},
+  {tag:'Stvoření', q:'Co Bůh stvořil jako poslední před odpočinkem?', a:['Člověka','Zvířata','Ryby'], ok:0, exp:'Člověk byl korunou stvoření — Bůh ho stvořil ke svému obrazu a vdechl mu život. To dává každému člověku jedinečnou hodnotu.'},
+  {tag:'Stvoření', q:'Co říká Bible, že Bůh viděl na konci stvoření?', a:['Že bylo vše velmi dobré','Že bylo vše hotové','Že bylo vše krásné'], ok:0, exp:'Na konci šestého dne Bůh pohlédl na vše, co stvořil — a bylo to velmi dobré. Tento svět je Boží dar, který má být chráněn.'},
+
+  /* ═══ SVÁTKY A SYMBOLY ═══ */
+  {tag:'Svátky a symboly', q:'Co si křesťané připomínají o Vánocích?', a:['Narození Ježíše','Vzkříšení Ježíše','Příchod Ducha svatého'], ok:0, exp:'Vánoce slavíme narození Ježíše Krista v Betlémě. Evangelium říká, že andělé zpívali pastýřům: „Sláva na výsostech Bohu a na zemi pokoj."'},
+  {tag:'Svátky a symboly', q:'Co si křesťané připomínají o Velikonocích?', a:['Smrt a vzkříšení Ježíše','Narození Ježíše','Křest Ježíše'], ok:0, exp:'Velikonoce jsou nejdůležitější křesťanský svátek. Připomínáme si Ježíšovu smrt na kříži a jeho vzkříšení třetí den — základ naší víry.'},
+  {tag:'Svátky a symboly', q:'Co symbolizuje křest?', a:['Smytí hříchů a nový začátek','Přijetí do chrámu','Prosbu o zdraví'], ok:0, exp:'Křest symbolizuje smytí hříchů, smrt starého života a zrození do nového. Stejně jako Ježíš zemřel a vstal, i my „umíráme" hříchu a vstáváme k novému životu.'},
+  {tag:'Svátky a symboly', q:'Co symbolizuje holubice v křesťanství?', a:['Ducha svatého a mír','Boží hněv','Věčný život'], ok:0, exp:'Když byl Ježíš pokřtěn, sestoupil na něj Duch svatý v podobě holubice. Od té doby holubice symbolizuje Ducha svatého a pokoj.'},
+  {tag:'Svátky a symboly', q:'Co symbolizuje ryba (ICHTHYS) jako křesťanský symbol?', a:['Ježíš Kristus, Syn Boží, Spasitel','Vzkříšení','Mírumilovnost'], ok:0, exp:'Řecké slovo pro rybu je ICHTHYS — a každé písmeno je zkratka: Iésous Christos Theou Yios Sótér = Ježíš Kristus, Syn Boží, Spasitel. Byl to tajný symbol prvních křesťanů.'},
+  {tag:'Svátky a symboly', q:'Proč je kříž symbolem křesťanství?', a:['Protože na kříži Ježíš zemřel za naše hříchy','Protože na kříži se Ježíš narodil','Protože kříž byl Ježíšovým oblíbeným symbolem'], ok:0, exp:'Kříž připomíná Ježíšovu smrt na Golgotě. Křesťané věří, že tím Ježíš vzal na sebe trest za hříchy všech lidí. Proto je kříž symbolem lásky a odpuštění.'},
+
+  /* ═══ EXTRA — ZÁHADY A ZAJÍMAVOSTI ═══ */
+  {tag:'Zajímavosti', q:'Jak se jmenoval nejstarší člověk zmiňovaný v Bibli?', a:['Metuzalém','Noe','Adam'], ok:0, exp:'Metuzalém se podle Bible dožil 969 let — je nejstarším člověkem zmiňovaným v Bibli. Byl Noeovým dědečkem.'},
+  {tag:'Zajímavosti', q:'Jak se jmenoval člověk, který byl polknut velrybou a přežil tři dny?', a:['Jonáš','Daniel','Eliáš'], ok:0, exp:'Jonáš strávil tři dny v břiše velké ryby. Modlil se a prosil Boha. Ryba ho pak vyvrhla na souš. Ježíš sám přirovnal svá tři dny v hrobě k Jonášovi.'},
+  {tag:'Zajímavosti', q:'Kolikrát Petr zapřel Ježíše?', a:['Třikrát','Jednou','Dvakrát'], ok:0, exp:'Ježíš předpověděl, že ho Petr třikrát zapře dříve, než zakokrhá kohout. Přesně tak se stalo. Petr pak plakal, ale Ježíš mu po vzkříšení odpustil.'},
+  {tag:'Zajímavosti', q:'Jak se jmenoval strom, na který vylezl Zacheus?', a:['Fíkovník','Cedra','Palma'], ok:0, exp:'Zacheus vylezl na sykomorový fíkovník — velký strom s širokými větvemi. Odtud mohl dobře vidět přes hlavy davu.'},
+  {tag:'Zajímavosti', q:'Kolik košů nasbírali učedníci po nakrmení pěti tisíc?', a:['Dvanáct','Pět','Sedm'], ok:0, exp:'Po zázraku nakrmení nasbírali učedníci dvanáct košů zbylého jídla — víc, než bylo na začátku. Boží hojnost přesahuje naši představu.'},
+  {tag:'Zajímavosti', q:'Kde Ježíš prožil prvních třicet let svého života?', a:['V Nazaretu','V Betlémě','V Jeruzalémě'], ok:0, exp:'Po útěku do Egypta a návratu žila rodina v Nazaretu v Galileji. Proto se Ježíšovi říkalo „Nazaretský". Tam vyrůstal, pracoval jako tesař a žil do třiceti let.'},
+  {tag:'Zajímavosti', q:'Jakou barvu měl Josefův plášť darovaný otcem?', a:['Pestrobarevný','Bílý','Červený'], ok:0, exp:'Jákob dal Josefovi pestrobarevný plášť jako znak zvláštní přízně. To vzbudilo závist bratrů — byl to jeden z důvodů, proč ho prodali.'},
+  {tag:'Zajímavosti', q:'Jak se jmenoval slepec, kterého Ježíš uzdravil u Jericha?', a:['Bartimeus','Zacheus','Lazarus'], ok:0, exp:'Bartimeus seděl u cesty a žebral. Když slyšel, že jde Ježíš, začal volat: „Synu Davidův, smiluj se nade mnou!" A Ježíš ho uzdravil.'}
+];
+
+var questions = [];
+var currentIdx = 0;
+var score = 0;
+var answered = false;
+var QUIZ_LEN = 20;
+
+function shuffle(arr){
+  var a = arr.slice();
+  for(var i=a.length-1;i>0;i--){
+    var j=Math.floor(Math.random()*(i+1));
+    var t=a[i]; a[i]=a[j]; a[j]=t;
+  }
+  return a;
+}
+
+function startQuiz(){
+  questions = shuffle(ALL_QUESTIONS).slice(0, QUIZ_LEN);
+  currentIdx = 0;
+  score = 0;
+  document.getElementById('start-view').style.display = 'none';
+  document.getElementById('result-view').style.display = 'none';
+  document.getElementById('quiz-view').style.display = 'block';
+  renderQuestion();
+}
+
+function renderQuestion(){
+  answered = false;
+  var q = questions[currentIdx];
+
+  // Shuffle answers too
+  var opts = q.a.map(function(text, i){ return {text:text, orig:i}; });
+  opts = shuffle(opts);
+  var correctNewIdx = opts.findIndex(function(o){ return o.orig === q.ok; });
+
+  document.getElementById('q-tag').textContent = q.tag;
+  document.getElementById('q-text').textContent = q.q;
+  document.getElementById('prog-label').textContent = (currentIdx+1) + ' / ' + QUIZ_LEN;
+  document.getElementById('score-badge').textContent = '✓ ' + score;
+  document.getElementById('prog-fill').style.width = (currentIdx / QUIZ_LEN * 100) + '%';
+  document.getElementById('explain-box').style.display = 'none';
+  document.getElementById('next-btn').style.display = 'none';
+
+  var nextLabel = currentIdx < QUIZ_LEN - 1 ? 'Další otázka →' : 'Zobrazit výsledek →';
+  document.getElementById('next-btn').textContent = nextLabel;
+
+  var answersDiv = document.getElementById('answers');
+  answersDiv.innerHTML = '';
+  opts.forEach(function(opt, i){
+    var btn = document.createElement('button');
+    btn.className = 'ans-btn';
+    btn.textContent = opt.text;
+    btn.onclick = function(){ if(!answered) selectAnswer(i, correctNewIdx, q.exp, opts); };
+    answersDiv.appendChild(btn);
+  });
+}
+
+function selectAnswer(chosen, correct, exp, opts){
+  answered = true;
+  var btns = document.querySelectorAll('.ans-btn');
+  var isCorrect = chosen === correct;
+  if(isCorrect) score++;
+
+  btns.forEach(function(btn, i){
+    if(i === correct){
+      btn.classList.add('correct');
+    } else if(i === chosen && !isCorrect){
+      btn.classList.add('wrong');
+    } else {
+      btn.classList.add('dimmed');
+    }
+    btn.style.cursor = 'default';
+  });
+
+  var box = document.getElementById('explain-box');
+  document.getElementById('explain-icon').textContent = isCorrect ? '🎉' : '💡';
+  document.getElementById('explain-text').textContent = exp;
+  box.style.display = 'block';
+  box.style.background = isCorrect ? '#E1F5EE' : '#FAEEDA';
+
+  document.getElementById('next-btn').style.display = 'block';
+  document.getElementById('score-badge').textContent = '✓ ' + score;
+}
+
+function nextQuestion(){
+  currentIdx++;
+  if(currentIdx >= QUIZ_LEN){
+    showResult();
+  } else {
+    renderQuestion();
+    window.scrollTo(0,0);
+  }
+}
+
+function showResult(){
+  document.getElementById('quiz-view').style.display = 'none';
+  document.getElementById('result-view').style.display = 'block';
+
+  var pct = score / QUIZ_LEN;
+  var ico, title, msg;
+  if(pct >= 0.9){
+    ico='🏆'; title='Úžasné!';
+    msg='Znáš Bibli opravdu dobře. Jsi náš biblický šampion!';
+  } else if(pct >= 0.7){
+    ico='🌟'; title='Výborně!';
+    msg='Skvělý výsledek! Pár věcí ses dnes dozvěděl/a nových.';
+  } else if(pct >= 0.5){
+    ico='👍'; title='Dobrá práce!';
+    msg='Základ máš. Zkus to znovu — každý pokus tě posune dál.';
+  } else {
+    ico='📖'; title='Nevzdávej to!';
+    msg='Bible je velká kniha, ale čtením a poslechem to půjde. Zkus znovu!';
+  }
+
+  document.getElementById('result-ico').textContent = ico;
+  document.getElementById('result-title').textContent = title;
+  document.getElementById('result-score').textContent = score;
+  document.getElementById('result-max').textContent = 'z ' + QUIZ_LEN + ' správně';
+  document.getElementById('result-msg').textContent = msg;
+  window.scrollTo(0,0);
+}
+</script>
+</body>
+</html>
